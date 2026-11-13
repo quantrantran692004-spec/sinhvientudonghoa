@@ -21,6 +21,27 @@ def node(text, *, bounds="[10,10][200,50]", kind="android.widget.TextView"):
 
 
 class Q1FlowTests(unittest.TestCase):
+    def test_b8_recognizes_create_form_with_incomplete_accessibility_labels(self):
+        controls = [node("Mobile number"), node("Continue"),
+                    node("", kind="android.widget.EditText")]
+        for landmark in (node("First and last name:"),
+                         dict(node("Amazon"), **{"content-desc": "Create an account"})):
+            with self.subTest(landmark=landmark):
+                self.assertEqual(screen(controls + [landmark]), "CREATE_FORM")
+        self.assertNotEqual(screen(controls), "CREATE_FORM")
+        self.assertNotEqual(screen(controls + [node("First and last name"),
+                          node("", kind="android.widget.EditText")]), "CREATE_FORM")
+
+    def test_b8_resumes_on_create_form_without_tapping_again(self):
+        form = [node("First and last name:"), node("Mobile number"), node("Continue"),
+                node("", kind="android.widget.EditText")]
+        b8 = next(step.action for step in build_common_steps(self.phone, lambda _: None)
+                  if step.name.startswith("b8"))
+        with patch("amazon_android.account_flow._read_nodes", return_value=form), \
+             patch("amazon_android.account_flow._tap") as tap:
+            b8(self.job, self.deadline, self.stop)
+        tap.assert_not_called()
+
     def setUp(self):
         self.phone = CloudPhone("127.0.0.1:5001")
         self.job = RunJob(0, "batch", None, account=AccountData(

@@ -35,7 +35,9 @@ def _text(node: dict[str, str]) -> str:
 
 
 def _has(nodes: list[dict[str, str]], label: str) -> bool:
-    return any(_text(node) == label.casefold().rstrip(".") for node in nodes)
+    target = label.casefold().rstrip(".:")
+    return any(" ".join(node.get(attribute, "").split()).casefold().rstrip(".:") == target
+               for node in nodes for attribute in ("text", "content-desc"))
 
 
 def screen(nodes: list[dict[str, str]]) -> str:
@@ -46,7 +48,13 @@ def screen(nodes: list[dict[str, str]]) -> str:
         return "SMS"
     if _has(nodes, "Verify with WhatsApp") and _has(nodes, "Send code by SMS"):
         return "WHATSAPP"
-    if _has(nodes, "Create account") and _has(nodes, "First and last name"):
+    create_heading = any(_has(nodes, title) for title in
+                         ("Create account", "Create an account", "Create your Amazon account"))
+    name_label = _has(nodes, NAME_FIELD)
+    if (create_heading and name_label) or (
+            (create_heading or name_label) and
+            _has(nodes, "Mobile number") and _has(nodes, "Continue") and
+            len(_visible_edit_fields(nodes)) == 1):
         return "CREATE_FORM"
     if _has(nodes, "Looks like you are new to Amazon") and _has(
             nodes, "Proceed to create an account"):
@@ -233,7 +241,7 @@ def _wait_screen(phone: CloudPhone, expected: set[str],
         if screen(nodes) in expected:
             return nodes
         stop.wait(min(0.1, max(0, until - time.monotonic())))
-    raise ToolError("Amazon chưa hiện màn hình kế tiếp như ảnh hướng dẫn")
+    raise ToolError("Chưa nhận diện được màn kế tiếp từ cây giao diện Android")
 
 
 def visit_home(phone: CloudPhone, deadline: AttemptDeadline,
@@ -565,7 +573,7 @@ def build_common_steps(phone: CloudPhone,
             raise ToolError("Máy này chưa ở màn tạo tài khoản mới")
         _check_summary(nodes, job)
         _tap(phone, _button(nodes, "Proceed to create an account"), deadline)
-        _wait_screen(phone, {"CREATE_FORM"}, deadline, stop)
+        _wait_screen(phone, {"CREATE_FORM", "WHATSAPP", "SMS"}, deadline, stop)
 
     def name(job: RunJob, deadline: AttemptDeadline,
              stop: threading.Event) -> None:

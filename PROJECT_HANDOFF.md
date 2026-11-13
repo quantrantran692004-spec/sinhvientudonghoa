@@ -19,6 +19,8 @@ Menu ba gạch có thêm biến thể dạng danh sách: trên các máy đã n�
 
 ## Trạng thái kiểm chứng và giới hạn
 
+- Ảnh q1 mới cho thấy form tạo tài khoản đã hiện dù b8 báo chưa nhận diện được màn. Bộ nhận diện chung đọc cả `text` và `content-desc`, chấp nhận tiêu đề biến thể và dùng nhãn tên hoặc tiêu đề cùng Mobile number, Continue và một ô nhập hiện hữu. Khi b8 đọc được form đã mở, chuyển sang b9 mà không bấm lại. Mô phỏng đã kiểm tra các biến thể và trường hợp mơ hồ. Chưa đọc được cây UI q1 thật vì không thấy ADB Swarmote.
+
 - Danh sách quốc gia dài. Sau cú vuốt nhanh rồi nhả, nếu màn vẫn hiện các nước nhóm A–S, b6 tiếp tục dùng cú vuốt mạnh. Gần nhóm T/U thì cuộn có kiểm soát và cuộn ngược nếu vượt qua mục Mỹ.
 
 - Ảnh b6 mới cho thấy danh sách đã tới United States nhưng lệnh ADB hết hạn sau 6 giây. B6 dùng lại cây UI đã đọc để chọn mục đang hiện hoặc quyết định cú vuốt đầu. Nếu thao tác đọc cây UI hết hạn ở ADB, thử đọc lại một lần trong thời hạn của máy, không lặp cú vuốt hoặc bấm. Chưa có số đo trên máy thật.
