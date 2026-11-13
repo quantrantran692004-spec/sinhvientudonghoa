@@ -5,7 +5,9 @@ import queue
 import threading
 import time
 import tkinter as tk
-from tkinter import messagebox
+import webbrowser
+from dataclasses import replace
+from tkinter import messagebox, simpledialog
 from pathlib import Path
 
 import customtkinter as ctk
@@ -14,7 +16,7 @@ from PIL import Image
 from .bulk_input import MAX_PROFILES, parse_column, parse_records, validate_card
 from .batch_state import BatchDraft
 from .core import ToolError
-from .otp import otp_token, validate_otp_url
+from .otp import extract_otp, otp_token, validate_otp_url
 from .post_menu import PostMenuSession, PostMenuStep
 from .account_flow import (
     resume_common_index, route_list_menu, verify_menu_open,
@@ -1137,9 +1139,49 @@ class Window:
         session = self.post_menu_sessions.get(index)
         if session is not None:
             if session.state == "PAUSED":
+                if (session.last_error.startswith("b11 nhập OTP:") and
+                        "HTTP 403" in session.last_error):
+                    if not self._read_browser_otp(index):
+                        return
                 self._start_post_menu(index)
             return
         self._launch([index])
+
+    def _read_browser_otp(self, index: int) -> bool:
+        job = self.jobs[index]
+        if job.account is None:
+            return False
+        choice = messagebox.askyesnocancel(
+            f"Máy {index + 1} · OTP SMS",
+            "URL OTP trả HTTP 403 khi tool đọc trực tiếp.\n\n"
+            "Yes: mở URL của máy này và dán phản hồi SMS vào tool.\n"
+            "No: tiếp tục trên Amazon hoặc thử đọc URL lại.\n"
+            "Cancel: giữ máy ở bước hiện tại.", parent=self.root)
+        if choice is not True:
+            return choice is False
+        try:
+            if not webbrowser.open(validate_otp_url(job.account.otp_url)):
+                raise ToolError("Không mở được trình duyệt mặc định")
+            response = simpledialog.askstring(
+                f"Máy {index + 1} · Dán phản hồi OTP",
+                "Tải lại trang OTP rồi dán nội dung SMS Amazon hoặc mã 6 số.",
+                show="*", parent=self.root)
+            if response is None:
+                return False
+            response = response.strip()
+            code = (response if len(response) == 6 and response.isascii() and
+                    response.isdigit() else extract_otp(response))
+            if not code or not code.isascii():
+                raise ToolError("Chưa thấy mã SMS Amazon hợp lệ")
+        except ToolError as exc:
+            messagebox.showerror("Không đọc được mã SMS", str(exc), parent=self.root)
+            return False
+        except (OSError, webbrowser.Error):
+            messagebox.showerror("Không đọc được mã SMS", "Không mở được trình duyệt",
+                                 parent=self.root)
+            return False
+        self.jobs[index] = replace(job, account=replace(job.account, browser_otp=code))
+        return True
 
     def _request_stop(self) -> None:
         self.cancel.set()

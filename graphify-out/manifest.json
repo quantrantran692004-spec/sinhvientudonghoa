@@ -42,9 +42,9 @@
     "semantic_hash": "cf72972d3982e154acde9b3ebdcdf728"
   },
   "amazon_android/desktop.py": {
-    "mtime": 1794559484.4085867,
-    "seen": 1794559875.2933037,
-    "ast_hash": "dc84c6446843451ed417eef982b86788",
+    "mtime": 1794562629.4054277,
+    "seen": 1794562638.5319626,
+    "ast_hash": "24ca5c823c3679819df59f578dfa1d36",
     "semantic_hash": ""
   },
   "amazon_android/home_menu.py": {
@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "amazon_android/otp.py": {
-    "mtime": 1794561381.0908475,
-    "seen": 1794561412.5969365,
-    "ast_hash": "a4174c3b05640e68b512d2a0ea74d71e",
+    "mtime": 1794562628.9014318,
+    "seen": 1794562638.5319626,
+    "ast_hash": "ac9b0cb7172655a93243a9b1a05b0590",
     "semantic_hash": ""
   },
   "amazon_android/post_menu.py": {
@@ -84,9 +84,9 @@
     "semantic_hash": "692c12238fb3229d81b09e7a7d268765"
   },
   "amazon_android/runner.py": {
-    "mtime": 1794558848.126443,
-    "seen": 1794559010.8514924,
-    "ast_hash": "b1ea3ac83ebee8c6d8e550e51e53c1e6",
+    "mtime": 1794562553.8660133,
+    "seen": 1794562638.5319626,
+    "ast_hash": "ce3b5d853ded94ba87bd94cbf605c3fc",
     "semantic_hash": ""
   },
   "amazon_android/settings.py": {
@@ -144,9 +144,9 @@
     "semantic_hash": "e01e7084402cb423184de3937896ee95"
   },
   "tests/test_desktop_resume.py": {
-    "mtime": 1794558869.7864842,
-    "seen": 1794559010.8514924,
-    "ast_hash": "82a5db502b29dbc5d89862f5e261de83",
+    "mtime": 1794562629.6170638,
+    "seen": 1794562638.5319626,
+    "ast_hash": "5cfd64fba25bf945595541ab3691c7bb",
     "semantic_hash": ""
   },
   "tests/test_home_menu.py": {
@@ -258,9 +258,9 @@
     "semantic_hash": ""
   },
   "PROJECT_HANDOFF.md": {
-    "mtime": 1794562409.197913,
-    "seen": 1794562419.8969166,
-    "ast_hash": "401c3cee119f24407cccbd35686ce112",
+    "mtime": 1794562629.8290937,
+    "seen": 1794562638.5319626,
+    "ast_hash": "92a53bf64761ddd2f9f8516b9f32fd2c",
     "semantic_hash": ""
   },
   "Q1_FLOW.md": {
@@ -354,9 +354,9 @@
     "semantic_hash": ""
   },
   "amazon_android/account_flow.py": {
-    "mtime": 1794562408.7229128,
-    "seen": 1794562419.8969166,
-    "ast_hash": "ce2de3df74b63c2bea83a4dcfea9213a",
+    "mtime": 1794562629.1344266,
+    "seen": 1794562638.5319626,
+    "ast_hash": "f885a25ae4adcb27457c30834b89a9f3",
     "semantic_hash": ""
   },
   "ASSET_INDEX.md": {

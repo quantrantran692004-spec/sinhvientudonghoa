@@ -19,6 +19,8 @@ Menu ba gạch có thêm biến thể dạng danh sách: trên các máy đã n�
 
 ## Trạng thái kiểm chứng và giới hạn
 
+- Ở b11, người dùng xác nhận cùng URL có SMS đúng mẫu trong trình duyệt khi tool báo HTTP 403. Bấm Tiếp tục ở máy lỗi để mở URL đúng hàng và dán phản hồi SMS hoặc 6 số vào tool. Tool xác nhận lại số điện thoại trên màn SMS trước khi điền. OTP chỉ giữ trong bộ nhớ. Bộ đọc phân biệt phản hồi có header `cf-mitigated: challenge` với HTTP 403 thông thường. Chưa xác định nguyên nhân 403 trên máy người dùng hoặc kiểm chứng tự đọc URL thật.
+
 - Ảnh q1 mới báo b9 chưa xác nhận được nội dung ô tên dù tên đã hiện. Luồng chung đọc lại tối đa ba lần sau khi gõ, không gõ lặp và chỉ bấm Continue khi nội dung khớp tên của máy. Kiểm tra mô phỏng giá trị tên cập nhật trễ. Chưa xác nhận trên Swarmote thật.
 
 - Sau ảnh q1 dừng tại b4 dù form đã xuất hiện, luồng chung tách b4a chạm ô SĐT thành bước riêng giữa Sign In và gõ số. B4a chờ form, chạm ô và b5 kiểm tra lại focus trước khi gõ. Form cũng được nhận khi có nhãn SĐT, Continue và một ô nhập hiện hữu dù cây UI thiếu tiêu đề. Giảm khoảng nghỉ khi kiểm tra màn và cuộn thường. Chưa kiểm chứng trên Swarmote thật.

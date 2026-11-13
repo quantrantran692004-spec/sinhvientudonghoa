@@ -26,6 +26,7 @@ class AccountData:
     password: str = field(repr=False)
     otp_url: str = field(repr=False)
     card: str = field(default="", repr=False)
+    browser_otp: str = field(default="", repr=False)
 
 
 @dataclass(frozen=True)

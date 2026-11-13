@@ -71,6 +71,9 @@ def read_otp(url: str, *, timeout: float = 5) -> str | None:
         with _OPENER.open(request, timeout=timeout) as response:
             payload = response.read(8193)
     except HTTPError as exc:
+        if exc.code == 403 and exc.headers and exc.headers.get("cf-mitigated") == "challenge":
+            raise ToolError("URL OTP trả HTTP 403 kèm trang xác minh Cloudflare. "
+                            "Bấm Tiếp tục để đọc bằng trình duyệt") from None
         raise ToolError(f"URL OTP trả HTTP {exc.code}") from None
     except (URLError, TimeoutError, OSError):
         raise ToolError("Không kết nối được URL OTP") from None

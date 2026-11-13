@@ -8,6 +8,23 @@ from amazon_android.runner import AccountData, RunJob
 
 
 class DesktopResumeTests(unittest.TestCase):
+    def test_403_browser_recovery_uses_only_paused_machine_url(self):
+        window = Window.__new__(Window)
+        window.root = None
+        accounts = [AccountData("12025550123", "Example User", "Example456!",
+                                f"https://apifc.net/smsrecord?token=q{i + 1}")
+                    for i in range(2)]
+        window.jobs = {i: RunJob(i, "batch", None, account=account)
+                       for i, account in enumerate(accounts)}
+        with patch("amazon_android.desktop.messagebox.askyesnocancel", return_value=True), \
+             patch("amazon_android.desktop.webbrowser.open", return_value=True) as opened, \
+             patch("amazon_android.desktop.simpledialog.askstring", return_value=
+                   "yes|Amazon: 123456 is your sign-in code."):
+            self.assertTrue(window._read_browser_otp(1))
+        opened.assert_called_once_with(accounts[1].otp_url)
+        self.assertEqual(window.jobs[1].account.browser_otp, "123456")
+        self.assertEqual(window.jobs[0].account.browser_otp, "")
+
     def test_restarts_only_ready_work_not_old_errors_or_completed_machines(self):
         items = [
             {"slot": 0, "state": "ERROR", "stage": "APP_INSTALLED"},
