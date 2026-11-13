@@ -251,7 +251,8 @@ def _scroll_up(phone: CloudPhone, nodes: list[dict[str, str]],
 
 def _find_scrolling(phone: CloudPhone, label: str,
                     deadline: AttemptDeadline, stop: threading.Event,
-                    *, starts: bool = False) -> dict[str, str]:
+                    *, starts: bool = False,
+                    menu_action: bool = False) -> dict[str, str]:
     previous = None
     for _ in range(30):
         nodes = _read_nodes(phone, deadline, stop)
@@ -259,6 +260,18 @@ def _find_scrolling(phone: CloudPhone, label: str,
         matches = [node for node in nodes if _visible(node) and
                    (_text(node).startswith(target) if starts else _text(node) == target)]
         if matches:
+            if menu_action:
+                try:
+                    return _button(matches, label)
+                except ToolError:
+                    # The menu can expose both its row and a duplicate label.
+                    # Customer Service sits immediately before Sign In in both
+                    # observed layouts; use that live landmark if it is unique.
+                    anchors = [node for node in nodes if _visible(node)
+                               and _text(node) == "customer service"]
+                    if len({node["bounds"] for node in anchors}) == 1:
+                        return _button(matches, label, below=anchors[0])
+                    raise
             return _unique(matches, label, starts=starts)
         visible = tuple(_text(node) for node in nodes if _visible(node) and _text(node))
         if visible == previous:
@@ -383,7 +396,8 @@ def build_common_steps(phone: CloudPhone,
         if _at_or_after(nodes, "NEW_ACCOUNT"):
             return
         _ensure_menu(phone, deadline, stop)
-        _tap(phone, _find_scrolling(phone, "Sign In", deadline, stop), deadline)
+        _tap(phone, _find_scrolling(phone, "Sign In", deadline, stop,
+                                    menu_action=True), deadline)
         nodes = _wait_screen(phone, {"IDENTIFIER"}, deadline, stop)
         _tap(phone, _field(nodes, "Enter mobile number or email"), deadline)
 

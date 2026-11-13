@@ -16,4 +16,4 @@ Metadata/cấu hình đóng gói Python. Graphify phát hiện file nhưng bộ 
 
 ## Ảnh PNG trong dự án
 
-Sáu ảnh PNG giao diện cũ được liệt kê trong [ASSET_INDEX.md](ASSET_INDEX.md). Hai mươi hai ảnh q1/q2 cùng một ảnh menu chung nằm trong `flow_images/` và được ánh xạ tại [IMAGE_EVIDENCE.md](IMAGE_EVIDENCE.md). Cây chỉ có node tên ảnh từ mục lục, không có nội dung pixel.
+Sáu ảnh PNG giao diện cũ được liệt kê trong [ASSET_INDEX.md](ASSET_INDEX.md). Hai mươi ba ảnh q1/q2 cùng một ảnh menu chung nằm trong `flow_images/` và được ánh xạ tại [IMAGE_EVIDENCE.md](IMAGE_EVIDENCE.md). Cây chỉ có node tên ảnh từ mục lục, không có nội dung pixel.

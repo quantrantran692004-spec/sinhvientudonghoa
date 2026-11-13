@@ -79,4 +79,8 @@ Các ảnh người dùng gửi đã được sao chép vào `flow_images/` đ�
 - [05_b10_error.png](flow_images/q1/latest_errors/05_b10_error.png): thông báo URL OTP HTTP 403 khi tool ghi b10.
 - [06_whatsapp.png](flow_images/q1/latest_errors/06_whatsapp.png): màn vẫn là Verify with WhatsApp, nút Send code by SMS chưa được bấm. Ảnh này cho thấy bản đang chạy đã đọc URL trước khi gửi SMS; mã nguồn hiện tại đọc URL ở b11 sau khi xác nhận màn SMS. Chưa kiểm chứng phiên tool đang chạy nạp phiên bản mã nào.
 
+## q1 ảnh 15 — b4 Sign In trên menu danh sách
+
+[15_b4_list_sign_in_ambiguous.png](flow_images/q1/15_b4_list_sign_in_ambiguous.png): q1 hiện menu dạng danh sách, Sign In nằm dưới Customer Service nhưng tool báo không xác định được duy nhất `Sign In`. Bộ chọn b4 cần ưu tiên phần tử có thể bấm, hoặc phần tử ở dưới Customer Service khi cây UI trả nhãn lặp. Chưa có ADB dump của chính máy này để xác minh thuộc tính các node.
+
 Ảnh tiếp theo của người dùng chưa có trong danh mục này. Khi nhận ảnh mới, lưu tên theo máy và thứ tự, cập nhật `STEP_INVENTORY.md`, file Qn tương ứng, `PROJECT_HANDOFF.md` rồi cập nhật Graphify.

@@ -1,5 +1,11 @@
 # Biên bản kiểm tra thực tế — 2026-11-12
 
+## q1 menu danh sách b4 có nhiều Sign In — 2026-11-13
+
+- Ảnh q1 cho thấy menu danh sách mở, Sign In hiện dưới Customer Service, nhưng tool dừng b4 vì cây UI có nhiều nhãn Sign In. Ảnh lưu ở `flow_images/q1/15_b4_list_sign_in_ambiguous.png`.
+- Đã sửa bộ chọn chung của b4: ưu tiên phần tử có thể bấm; nếu nhãn lặp, dùng Customer Service hiện trên cùng menu làm mốc. Nếu vẫn mơ hồ thì giữ nguyên cơ chế dừng và Tiếp tục. `131/131` unittest PASS, gồm hai trường hợp nhãn lặp và một trường hợp dừng khi vẫn mơ hồ.
+- `cloud-scan` không tìm thấy ADB Swarmote/Android SDK trong môi trường này; chưa xác minh trực tiếp cây UI q1 hoặc bản mã của tiến trình tool đang mở. Cách tiếp tục ngay: bấm Sign In thủ công trên máy rồi bấm Tiếp tục ở Máy 1; b4 nhận form SĐT nếu đã hiện.
+
 ## Sáu ảnh q1 mới: b6, b9, b10 — 2026-11-13
 
 - Ảnh cho thấy dropdown quốc gia ở đầu chữ A khi b6 báo bounds lỗi; form b9 có bàn phím và một Continue thấy được; b10 báo URL HTTP 403 trong khi màn vẫn là WhatsApp, nút Send code by SMS chưa bấm. Lưu ảnh gốc ở `flow_images/q1/latest_errors/`.

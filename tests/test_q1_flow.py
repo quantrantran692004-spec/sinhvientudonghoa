@@ -109,6 +109,40 @@ class Q1FlowTests(unittest.TestCase):
         self.assertIs(tap.call_args_list[0].args[1], listed[-1])
         self.assertIs(tap.call_args_list[1].args[1], field)
 
+    def test_b4_prefers_clickable_sign_in_when_tree_repeats_label(self):
+        label = node("Sign In", bounds="[20,220][130,250]")
+        row = node("Sign In", bounds="[20,530][340,580]",
+                   kind="android.widget.Button")
+        row["clickable"] = "true"
+        menu = [node("Shop by Category"), node("Customer Service",
+                                               bounds="[20,470][340,510]"),
+                label, row]
+        with patch("amazon_android.account_flow._read_nodes", return_value=menu):
+            selected = _find_scrolling(self.phone, "Sign In", self.deadline,
+                                       self.stop, menu_action=True)
+        self.assertIs(selected, row)
+
+    def test_b4_uses_customer_service_landmark_for_two_text_labels(self):
+        other = node("Sign In", bounds="[20,220][130,250]")
+        menu_row = node("Sign In", bounds="[20,530][340,580]")
+        menu = [node("Shop by Category"), node("Customer Service",
+                                               bounds="[20,470][340,510]"),
+                other, menu_row]
+        with patch("amazon_android.account_flow._read_nodes", return_value=menu):
+            selected = _find_scrolling(self.phone, "Sign In", self.deadline,
+                                       self.stop, menu_action=True)
+        self.assertIs(selected, menu_row)
+
+    def test_b4_stops_if_two_sign_in_rows_remain_below_landmark(self):
+        menu = [node("Shop by Category"),
+                node("Customer Service", bounds="[20,470][340,510]"),
+                node("Sign In", bounds="[20,530][340,580]"),
+                node("Sign In", bounds="[20,590][340,640]")]
+        with patch("amazon_android.account_flow._read_nodes", return_value=menu):
+            with self.assertRaises(ToolError):
+                _find_scrolling(self.phone, "Sign In", self.deadline,
+                                self.stop, menu_action=True)
+
     def test_ambiguous_button_stops_instead_of_guessing(self):
         with self.assertRaises(ToolError):
             _unique([node("Continue", bounds="[0,0][100,40]"),
