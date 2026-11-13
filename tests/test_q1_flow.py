@@ -169,6 +169,15 @@ class Q1FlowTests(unittest.TestCase):
         field = node("Name", bounds="[30,210][350,250]")
         self.assertIs(_button([label, row], "Continue", below=field), row)
 
+    def test_b9_selects_full_width_continue_among_separate_matches(self):
+        field = node("Name", bounds="[30,210][350,250]")
+        action = dict(node("Continue", bounds="[35,470][345,520]"), clickable="true")
+        duplicate = dict(node("Continue", bounds="[120,525][240,555]"), clickable="true")
+        self.assertIs(_button([duplicate, action], "Continue", below=field), action)
+        another_action = dict(action, bounds="[35,530][345,580]")
+        with self.assertRaises(ToolError):
+            _button([action, another_action], "Continue", below=field)
+
     def test_country_scrolls_past_hidden_us_entry(self):
         hidden = node("United States +1", bounds="[0,0][0,0]")
         visible = node("United States +1", bounds="[50,320][320,360]")

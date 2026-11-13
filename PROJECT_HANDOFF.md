@@ -19,6 +19,8 @@ Menu ba gạch có thêm biến thể dạng danh sách: trên các máy đã n�
 
 ## Trạng thái kiểm chứng và giới hạn
 
+- Máy 2 báo b9 còn nhiều mục Continue sau khi tên đã điền. Bộ chọn chung ưu tiên nút duy nhất nằm dưới và phủ gần hết chiều ngang ô tên khi còn nhiều vùng bấm. Nếu có hai vùng cùng thỏa thì giữ điểm dừng. Kiểm tra mô phỏng, chưa có cây UI của màn lỗi trên máy thật.
+
 - B4–b5 dùng chung nhận diện form `Sign in or create account` có nút Continue và một ô nhập hiện hữu ngay cả khi cây UI thiếu nhãn SĐT. B4 chạm vào ô. B5 kiểm tra lại focus nếu ô chưa được chọn, thử chạm lại trước khi gõ và báo rõ nếu vẫn lỗi. Dùng cho q1, q2 và các máy nối sau. Chưa thử bản sửa trên Swarmote thật.
 
 - B6 dùng một cú vuốt dài và nhanh hướng về cuối danh sách quốc gia, sau đó đọc lại để tìm `United States +1`. Nếu thấy các mục sau Mỹ mà chưa thấy mục cần chọn, tool vuốt ngược ngắn để tìm lại. Áp dụng cho luồng chung. Chưa đo khoảng cuộn thực tế trên Swarmote.

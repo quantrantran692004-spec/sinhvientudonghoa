@@ -175,6 +175,16 @@ def _button(nodes: list[dict[str, str]], label: str,
                     if all(left <= x1 < x2 <= right and top <= y1 < y2 <= bottom
                            for x1, y1, x2, y2 in map(_bounds, distinct.values())):
                         return outer
+                # The form's full-width action aligns with the name input.
+                field_left, _, field_right, _ = _bounds(below)
+                min_overlap = (field_right - field_left) * 0.8
+                aligned = []
+                for candidate in distinct.values():
+                    left, _, right, _ = _bounds(candidate)
+                    if min(right, field_right) - max(left, field_left) >= min_overlap:
+                        aligned.append(candidate)
+                if len(aligned) == 1:
+                    return aligned[0]
             break
     raise ToolError(f"Không xác định được duy nhất nút '{label}' trên máy này")
 
