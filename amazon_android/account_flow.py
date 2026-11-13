@@ -96,13 +96,22 @@ def _read_nodes(phone: CloudPhone, deadline: AttemptDeadline,
     xml = cloud_adb(phone, "shell", "cat", UI_PATH, timeout=timeout,
                     check=False).stdout
     try:
-        nodes = [node.attrib for node in ET.fromstring(xml).iter("node")
-                 if node.attrib.get("package") == AMAZON_PACKAGE]
+        nodes = _parse_ui_nodes(xml)
     except ET.ParseError as exc:
         raise ToolError("Cây giao diện Amazon chưa hợp lệ") from exc
     if not nodes:
         raise ToolError("Amazon không ở màn hình trước; giữ nguyên máy này")
     return nodes
+
+
+def _parse_ui_nodes(xml: str) -> list[dict[str, str]]:
+    root = ET.fromstring(xml)
+    parents = {child: parent for parent in root.iter() for child in parent}
+    amazon_nodes = [node for node in root.iter("node")
+                    if node.get("package") == AMAZON_PACKAGE]
+    ids = {node: str(index) for index, node in enumerate(amazon_nodes)}
+    return [dict(node.attrib, ui_id=ids[node],
+                 ui_parent=ids.get(parents.get(node), "")) for node in amazon_nodes]
 
 
 def verify_menu_open(phone: CloudPhone, profile_name: str = "q1") -> None:
@@ -156,6 +165,20 @@ def _button(nodes: list[dict[str, str]], label: str,
     """Select the visible action control, not a hidden duplicate label."""
     matches = [node for node in nodes if _text(node) == label.casefold()
                and _visible(node)]
+    by_id = {node["ui_id"]: node for node in nodes if "ui_id" in node}
+    actions = []
+    for match in matches:
+        action = match
+        parent = by_id.get(match.get("ui_parent", ""))
+        while parent is not None and _visible(parent) and parent.get("scrollable") != "true":
+            if parent.get("clickable") == "true":
+                if (_text(parent) in {"", label.casefold()} and
+                        parent.get("class") != "android.widget.EditText"):
+                    action = parent
+                break
+            parent = by_id.get(parent.get("ui_parent", ""))
+        actions.append(action)
+    matches = actions
     if below is not None:
         bottom = _bounds(below)[3]
         matches = [node for node in matches if _bounds(node)[1] >= bottom]
@@ -304,7 +327,7 @@ def _find_scrolling(phone: CloudPhone, label: str,
         if matches:
             if menu_action:
                 try:
-                    return _button(matches, label)
+                    return _button(nodes, label)
                 except ToolError:
                     # The menu can expose both its row and a duplicate label.
                     # Customer Service sits immediately before Sign In in both
@@ -312,7 +335,7 @@ def _find_scrolling(phone: CloudPhone, label: str,
                     anchors = [node for node in nodes if _visible(node)
                                and _text(node) == "customer service"]
                     if len({node["bounds"] for node in anchors}) == 1:
-                        return _button(matches, label, below=anchors[0])
+                        return _button(nodes, label, below=anchors[0])
                     raise
             return _unique(matches, label, starts=starts)
         visible = tuple(_text(node) for node in nodes if _visible(node) and _text(node))
@@ -516,7 +539,7 @@ def build_common_steps(phone: CloudPhone,
         if screen(nodes) != "NEW_ACCOUNT":
             raise ToolError("Máy này chưa ở màn tạo tài khoản mới")
         _check_summary(nodes, job)
-        _tap(phone, _unique(nodes, "Proceed to create an account"), deadline)
+        _tap(phone, _button(nodes, "Proceed to create an account"), deadline)
         _wait_screen(phone, {"CREATE_FORM"}, deadline, stop)
 
     def name(job: RunJob, deadline: AttemptDeadline,
@@ -548,7 +571,7 @@ def build_common_steps(phone: CloudPhone,
         if screen(nodes) != "WHATSAPP" or job.account is None:
             raise ToolError("Máy này chưa ở màn chọn gửi mã bằng SMS")
         _check_summary(nodes, job)
-        _tap(phone, _unique(nodes, "Send code by SMS"), deadline)
+        _tap(phone, _button(nodes, "Send code by SMS"), deadline)
         state.sms_requested_at = time.monotonic()
         on_status("Đang chờ mã")
         _wait_screen(phone, {"SMS"}, deadline, stop)
@@ -593,7 +616,7 @@ def build_common_steps(phone: CloudPhone,
         if not re.fullmatch(r"[0-9]{6}", value):
             raise ToolError("Máy này chưa nhập đủ OTP để tạo tài khoản")
         if not state.create_pressed:
-            _tap(phone, _unique(nodes, "Create your Amazon account"), deadline)
+            _tap(phone, _button(nodes, "Create your Amazon account"), deadline)
             state.create_pressed = True
         until = time.monotonic() + deadline.allowance(10)
         while time.monotonic() < until:

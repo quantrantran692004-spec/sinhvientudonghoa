@@ -3,10 +3,10 @@ import unittest
 from unittest.mock import patch
 
 from amazon_android.cloud import CloudPhone
-from amazon_android.core import ToolError
+from amazon_android.core import AMAZON_PACKAGE, ToolError
 from amazon_android.post_menu import AttemptDeadline, PostMenuSession
 from amazon_android.account_flow import (
-    _button, _find_scrolling, _national_phone, _scroll_up, _unique,
+    _button, _find_scrolling, _national_phone, _parse_ui_nodes, _scroll_up, _unique,
     build_common_steps, menu_layout, resume_common_index,
     route_list_menu, screen,
 )
@@ -177,6 +177,17 @@ class Q1FlowTests(unittest.TestCase):
         another_action = dict(action, bounds="[35,530][345,580]")
         with self.assertRaises(ToolError):
             _button([action, another_action], "Continue", below=field)
+
+    def test_b9_resolves_two_xml_labels_to_one_clickable_parent(self):
+        xml = f'''<hierarchy>
+          <node package="{AMAZON_PACKAGE}" clickable="true" bounds="[35,470][345,520]">
+            <node package="{AMAZON_PACKAGE}" text="Continue" bounds="[120,478][240,500]" />
+            <node package="{AMAZON_PACKAGE}" content-desc="Continue" bounds="[116,483][244,510]" />
+          </node>
+        </hierarchy>'''
+        nodes = _parse_ui_nodes(xml)
+        field = node("Name", bounds="[30,210][350,250]")
+        self.assertIs(_button(nodes, "Continue", below=field), nodes[0])
 
     def test_country_scrolls_past_hidden_us_entry(self):
         hidden = node("United States +1", bounds="[0,0][0,0]")

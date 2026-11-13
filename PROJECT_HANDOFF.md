@@ -19,6 +19,8 @@ Menu ba gạch có thêm biến thể dạng danh sách: trên các máy đã n�
 
 ## Trạng thái kiểm chứng và giới hạn
 
+- Luồng chung giữ quan hệ cha con trong cây UI Android. Bộ chọn nút quy các nhãn lặp về điều khiển cha có thể bấm trước khi so sánh vùng bấm. Áp dụng cho Sign In, Continue, Proceed to create an account, Send code by SMS và Create your Amazon account. Đã thêm kiểm tra với cây XML mô phỏng, chưa có ADB Swarmote để đối chiếu cây UI thật.
+
 - Máy 2 báo b9 còn nhiều mục Continue sau khi tên đã điền. Bộ chọn chung ưu tiên nút duy nhất nằm dưới và phủ gần hết chiều ngang ô tên khi còn nhiều vùng bấm. Nếu có hai vùng cùng thỏa thì giữ điểm dừng. Kiểm tra mô phỏng, chưa có cây UI của màn lỗi trên máy thật.
 
 - B4–b5 dùng chung nhận diện form `Sign in or create account` có nút Continue và một ô nhập hiện hữu ngay cả khi cây UI thiếu nhãn SĐT. B4 chạm vào ô. B5 kiểm tra lại focus nếu ô chưa được chọn, thử chạm lại trước khi gõ và báo rõ nếu vẫn lỗi. Dùng cho q1, q2 và các máy nối sau. Chưa thử bản sửa trên Swarmote thật.
