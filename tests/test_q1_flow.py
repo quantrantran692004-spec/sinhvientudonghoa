@@ -319,6 +319,19 @@ class Q1FlowTests(unittest.TestCase):
         self.assertTrue(scroll.call_args_list[1].kwargs["fling"])
         self.assertTrue(scroll.call_args_list[2].kwargs["reverse"])
 
+    def test_b6_reverses_when_forward_swipe_no_longer_moves_list(self):
+        last = [node("Wallis and Futuna +681")]
+        target = node("United States +1")
+        with patch("amazon_android.account_flow._read_nodes",
+                   side_effect=[last, last, [target]]), \
+             patch("amazon_android.account_flow._scroll_up") as scroll, \
+             patch.object(self.stop, "wait", return_value=False):
+            self.assertIs(_find_scrolling(self.phone, "United States +1",
+                                          self.deadline, self.stop,
+                                          country_list=True), target)
+        self.assertFalse(scroll.call_args_list[0].kwargs["reverse"])
+        self.assertTrue(scroll.call_args_list[1].kwargs["reverse"])
+
     def test_phone_uses_input_digits_then_checks_us_national_number(self):
         self.assertEqual(_national_phone(self.job), "2025550123")
 

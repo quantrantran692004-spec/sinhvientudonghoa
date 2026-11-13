@@ -393,7 +393,7 @@ def _scroll_up(phone: CloudPhone, nodes: list[dict[str, str]],
         if fling:
             start, end, duration = (0.96, 0.04, "65")
         elif reverse:
-            start, end, duration = (0.35, 0.65, "240")
+            start, end, duration = (0.40, 0.59, "280")
         else:
             start, end, duration = (0.88, 0.12, "220")
         scroll_regions = {_bounds(node) for node in nodes
@@ -438,6 +438,8 @@ def _find_scrolling(phone: CloudPhone, label: str,
                     country_list: bool = False,
                     nodes: list[dict[str, str]] | None = None) -> dict[str, str]:
     previous = None
+    previous_reverse = False
+    visited = set()
     for attempt in range(30):
         if nodes is None:
             nodes = _read_nodes(phone, deadline, stop)
@@ -459,12 +461,18 @@ def _find_scrolling(phone: CloudPhone, label: str,
                     raise
             return _unique(matches, label, starts=starts)
         visible = tuple(_text(node) for node in nodes if _visible(node) and _text(node))
-        if visible == previous:
+        stalled = visible == previous
+        if stalled and (not country_list or previous_reverse):
             break
-        previous = visible
-        reverse = country_list and any(text.startswith(("uruguay +", "uzbekistan +",
-                   "vanuatu +", "vietnam +", "yemen +", "zambia +", "zimbabwe +"))
-                   for text in visible)
+        reverse = country_list and (stalled or any(
+            text.startswith(("uruguay +", "uzbekistan +", "vanuatu +", "vatican city +",
+                             "venezuela +", "vietnam +", "yemen +", "zambia +", "zimbabwe +"))
+            for text in visible))
+        position = (visible, reverse)
+        if position in visited:
+            break
+        visited.add(position)
+        previous, previous_reverse = visible, reverse
         far_from_us = any(re.fullmatch(r"[a-s][^+]*\+\d+", text) for text in visible)
         fling = country_list and not reverse and (attempt == 0 or far_from_us)
         _scroll_up(phone, nodes, deadline, country_list=country_list,
