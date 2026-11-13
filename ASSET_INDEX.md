@@ -26,4 +26,4 @@ Graphify hiện không trích xuất nội dung pixel của PNG do thiếu backe
 
 1725 × 1000 px. Ảnh PNG ở gốc dự án; nội dung chưa được trích xuất vào graph.
 
-Ảnh q1/q2 người dùng gửi nằm trong `flow_images/` và được lập danh mục trong [IMAGE_EVIDENCE.md](IMAGE_EVIDENCE.md). Các bước cũng được chép thành văn bản trong `STEP_INVENTORY.md`, `Q1_FLOW.md`, `Q2_FLOW.md`; Graphify chưa đọc nội dung pixel của ảnh.
+Mười sáu ảnh q1/q2 người dùng gửi nằm trong `flow_images/` và được lập danh mục trong [IMAGE_EVIDENCE.md](IMAGE_EVIDENCE.md). Các bước cũng được chép thành văn bản trong `STEP_INVENTORY.md`, `Q1_FLOW.md`, `Q2_FLOW.md`; Graphify chưa đọc nội dung pixel của ảnh.

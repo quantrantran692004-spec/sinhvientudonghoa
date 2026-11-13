@@ -16,7 +16,7 @@ from .batch_state import BatchDraft
 from .core import ToolError
 from .otp import otp_token, validate_otp_url
 from .post_menu import PostMenuSession, PostMenuStep
-from .account_flow import verify_menu_open
+from .account_flow import resume_common_index, verify_menu_open
 from .q1_flow import build_q1_steps
 from .q2_flow import build_q2_steps
 from .cloud import CloudPhone
@@ -1241,10 +1241,27 @@ class Window:
 
         pythoncom.CoInitialize()
         try:
+            def reconcile(current, active_job, deadline, active_stop):
+                phone = CloudPhone(self.phone_serials[job.index])
+                target = resume_common_index(phone, steps, current,
+                                             deadline, active_stop)
+                if target == current:
+                    return None
+                factory = self.post_menu_step_factories[job.index]
+                replacement = factory(
+                    phone,
+                    lambda code, batch_id=active_job.batch_id, slot=job.index:
+                        self.otp_events.put((batch_id, slot, code)),
+                    lambda status, batch_id=active_job.batch_id, slot=job.index:
+                        self.otp_status_events.put((batch_id, slot, status)),
+                )
+                self.post_menu_steps[job.index] = replacement
+                return target, replacement
+
             session.run(job, steps,
                         lambda index, message, state, name:
                             self.events.put((index, message, state, name)),
-                        stop)
+                        stop, reconcile=reconcile)
         finally:
             pythoncom.CoUninitialize()
 

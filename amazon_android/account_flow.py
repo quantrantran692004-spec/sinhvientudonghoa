@@ -15,7 +15,7 @@ from typing import Callable
 
 from .cloud import CloudPhone, cloud_adb
 from .core import AMAZON_PACKAGE, ToolError
-from .otp import read_otp, wait_for_new_otp
+from .otp import wait_for_new_otp
 from .post_menu import AttemptDeadline, PostMenuStep, type_characters
 from .registration import BOUNDS, _field_for_label
 from .runner import RunJob
@@ -113,6 +113,37 @@ def _unique(nodes: list[dict[str, str]], label: str,
     return next(iter(distinct.values()))
 
 
+def _visible(node: dict[str, str]) -> bool:
+    if node.get("visible-to-user") == "false" or node.get("enabled") == "false":
+        return False
+    try:
+        _bounds(node)
+    except ToolError:
+        return False
+    return True
+
+
+def _button(nodes: list[dict[str, str]], label: str,
+            *, below: dict[str, str] | None = None) -> dict[str, str]:
+    """Select the visible action control, not a hidden duplicate label."""
+    matches = [node for node in nodes if _text(node) == label.casefold()
+               and _visible(node)]
+    if below is not None:
+        bottom = _bounds(below)[3]
+        matches = [node for node in matches if _bounds(node)[1] >= bottom]
+    for preferred in (
+            [node for node in matches if node.get("clickable") == "true"
+             and node.get("class") == "android.widget.Button"],
+            [node for node in matches if node.get("clickable") == "true"],
+            matches):
+        distinct = {node["bounds"]: node for node in preferred}
+        if len(distinct) == 1:
+            return next(iter(distinct.values()))
+        if len(distinct) > 1:
+            break
+    raise ToolError(f"Không xác định được duy nhất nút '{label}' trên máy này")
+
+
 def _wait_screen(phone: CloudPhone, expected: set[str],
                  deadline: AttemptDeadline, stop: threading.Event,
                  *, seconds: float = 10) -> list[dict[str, str]]:
@@ -153,14 +184,14 @@ def _find_scrolling(phone: CloudPhone, label: str,
                     deadline: AttemptDeadline, stop: threading.Event,
                     *, starts: bool = False) -> dict[str, str]:
     previous = None
-    for _ in range(10):
+    for _ in range(30):
         nodes = _read_nodes(phone, deadline, stop)
         target = label.casefold()
-        matches = [node for node in nodes if
+        matches = [node for node in nodes if _visible(node) and
                    (_text(node).startswith(target) if starts else _text(node) == target)]
         if matches:
-            return _unique(nodes, label, starts=starts)
-        visible = tuple(_text(node) for node in nodes if _text(node))
+            return _unique(matches, label, starts=starts)
+        visible = tuple(_text(node) for node in nodes if _visible(node) and _text(node))
         if visible == previous:
             break
         previous = visible
@@ -238,9 +269,30 @@ def _check_summary(nodes: list[dict[str, str]], job: RunJob) -> None:
         raise ToolError("SĐT trên Amazon không khớp hàng của máy này")
 
 
+def resume_common_index(phone: CloudPhone, steps: tuple[PostMenuStep, ...],
+                        current: int, deadline: AttemptDeadline,
+                        stop: threading.Event) -> int:
+    """Rewind a paused phone to its observed shared screen, never skip ahead."""
+    if current >= len(steps) - 1:  # A prior Create tap must never be repeated.
+        return current
+    target_name = {
+        "MENU": "b4 Sign In",
+        "IDENTIFIER": "b4 Sign In",
+        "COUNTRY": "b6 chọn US +1",
+        "NEW_ACCOUNT": "b8 Proceed to create an account",
+        "CREATE_FORM": "b9 nhập tên",
+        "WHATSAPP": "b10 Send code by SMS",
+        "SMS": "b10 Send code by SMS",
+    }.get(screen(_read_nodes(phone, deadline, stop)))
+    if target_name is None:
+        return current
+    matches = [index for index, step in enumerate(steps)
+               if step.name == target_name]
+    return min(current, matches[0]) if len(matches) == 1 else current
+
+
 @dataclass
 class _RegistrationState:
-    baseline: str | None = None
     sms_requested: bool = False
     code: str = ""
     create_pressed: bool = False
@@ -256,11 +308,15 @@ def build_common_steps(phone: CloudPhone,
     def sign_in(job: RunJob, deadline: AttemptDeadline,
                 stop: threading.Event) -> None:
         nodes = _read_nodes(phone, deadline, stop)
-        if _at_or_after(nodes, "IDENTIFIER"):
+        if screen(nodes) == "IDENTIFIER":
+            _tap(phone, _field(nodes, "Enter mobile number or email"), deadline)
+            return
+        if _at_or_after(nodes, "NEW_ACCOUNT"):
             return
         _ensure_menu(phone, deadline, stop)
         _tap(phone, _find_scrolling(phone, "Sign In", deadline, stop), deadline)
-        _wait_screen(phone, {"IDENTIFIER"}, deadline, stop)
+        nodes = _wait_screen(phone, {"IDENTIFIER"}, deadline, stop)
+        _tap(phone, _field(nodes, "Enter mobile number or email"), deadline)
 
     def phone_number(job: RunJob, deadline: AttemptDeadline,
                      stop: threading.Event) -> None:
@@ -303,7 +359,7 @@ def build_common_steps(phone: CloudPhone,
         if screen(nodes) != "IDENTIFIER" or not _has(nodes, "US +1"):
             raise ToolError("Máy này chưa xác nhận số điện thoại US +1")
         _check_summary(nodes, job)
-        _tap(phone, _unique(nodes, "Continue"), deadline)
+        _tap(phone, _button(nodes, "Continue"), deadline)
         _wait_screen(phone, {"NEW_ACCOUNT", "CREATE_FORM"}, deadline, stop)
 
     def proceed(job: RunJob, deadline: AttemptDeadline,
@@ -328,22 +384,22 @@ def build_common_steps(phone: CloudPhone,
         _type_field(phone, "First and last name", job.account.full_name,
                     deadline, stop)
         nodes = _read_nodes(phone, deadline, stop)
-        _tap(phone, _unique(nodes, "Continue"), deadline)
+        _tap(phone, _button(nodes, "Continue",
+                            below=_field(nodes, "First and last name")), deadline)
         _wait_screen(phone, {"WHATSAPP", "SMS"}, deadline, stop)
 
     def send_sms(job: RunJob, deadline: AttemptDeadline,
                  stop: threading.Event) -> None:
         nodes = _read_nodes(phone, deadline, stop)
+        if screen(nodes) == "SMS":
+            state.sms_requested = True
+            on_status("Đang chờ mã")
+            return
         if state.sms_requested:
-            if screen(nodes) == "SMS":
-                on_status("Đang chờ mã")
-                return
             raise ToolError("Đã bấm gửi SMS nhưng chưa xác nhận màn nhập mã; kiểm tra máy này")
         if screen(nodes) != "WHATSAPP" or job.account is None:
             raise ToolError("Máy này chưa ở màn chọn gửi mã bằng SMS")
         _check_summary(nodes, job)
-        state.baseline = read_otp(job.account.otp_url,
-                                  timeout=deadline.allowance(5))
         _tap(phone, _unique(nodes, "Send code by SMS"), deadline)
         state.sms_requested = True
         on_status("Đang chờ mã")
@@ -363,7 +419,7 @@ def build_common_steps(phone: CloudPhone,
         if not state.sms_requested:
             raise ToolError("Chưa xác nhận được lần gửi SMS; sửa mã trên máy rồi Tiếp tục")
         code = state.code or wait_for_new_otp(
-            job.account.otp_url, state.baseline,
+            job.account.otp_url, None,
             timeout=deadline.allowance(30), stop=stop)
         _type_field(phone, "Enter security code", code, deadline, stop)
         state.code = code

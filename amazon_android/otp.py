@@ -87,8 +87,17 @@ def wait_for_new_otp(url: str, previous_code: str | None, *,
         raise ValueError("OTP timeout and interval must be positive")
     deadline = time.monotonic() + timeout
     stop = stop or threading.Event()
+    last_http_403 = False
     while not stop.is_set():
-        code = read_otp(url)
+        try:
+            code = read_otp(url)
+            last_http_403 = False
+        except ToolError as exc:
+            if str(exc) != "URL OTP trả HTTP 403":
+                raise
+            # Some links reject reads until the SMS has reached the provider.
+            last_http_403 = True
+            code = None
         if code is not None and code != previous_code:
             return code
         remaining = deadline - time.monotonic()
@@ -97,4 +106,6 @@ def wait_for_new_otp(url: str, previous_code: str | None, *,
         stop.wait(min(interval, remaining))
     if stop.is_set():
         raise ToolError("Đã dừng chờ OTP")
+    if last_http_403:
+        raise ToolError("URL OTP vẫn trả HTTP 403 sau khi gửi SMS")
     raise ToolError("Hết thời gian chờ OTP mới")

@@ -67,6 +67,13 @@ class OtpTests(unittest.TestCase):
                 thread.join()
         self.assertEqual(result, {"a": "333333", "b": "444444"})
 
+    def test_retries_temporary_http_403_after_sms_send(self):
+        url = "https://apifc.net/smsrecord?token=test"
+        with patch("amazon_android.otp.read_otp",
+                   side_effect=[ToolError("URL OTP trả HTTP 403"), "123456"]):
+            self.assertEqual(wait_for_new_otp(url, None, timeout=2,
+                                              interval=0.001), "123456")
+
 
 if __name__ == "__main__":
     unittest.main()

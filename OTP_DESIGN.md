@@ -11,8 +11,8 @@
 ## Nối vào bước tạo tài khoản sau khi xác minh màn hình Amazon
 
 1. Runner lấy bản dữ liệu bất biến của hàng: `batch_id`, `slot`, Profile, SĐT, mật khẩu, tên, thẻ và URL OTP. Nó chỉ thao tác trên điện thoại có Device ID/ADB serial của hàng đó. Thẻ hiện chỉ được gắn dữ liệu, chưa dùng trong các bước b1–b11.
-2. Sau khi nhận diện đúng form, runner điền thông tin. Ngay trước nút gửi OTP, gọi `read_otp(url)` để ghi nhận mã cũ. Nếu không đọc được URL, dừng hàng này trước khi gửi.
-3. Runner bấm gửi OTP, xác nhận màn hình nhập mã rồi gọi `wait_for_new_otp(url, previous_code)`. Chờ tối đa 30 giây, kiểm tra khoảng mỗi giây. Mã bằng mã cũ tiếp tục được xem là đang chờ.
+2. Sau khi nhận diện đúng form, runner điền thông tin và bấm `Send code by SMS` một lần. Không đọc URL trước khi gửi vì q1 đã gặp HTTP 403 ở thời điểm đó.
+3. Runner xác nhận màn hình nhập mã rồi gọi `wait_for_new_otp(url, None)`. Chờ tối đa 30 giây, kiểm tra khoảng mỗi giây. HTTP 403 tạm thời được thử lại trong thời hạn; nếu kéo dài thì dừng đúng hàng. Phản hồi APIFC hiện chỉ có mã, không có dấu thời gian, nên không thể chứng minh mã vừa nhận là mới khi URL đã có mã từ lần trước.
 4. Mã mới được chuyển về đúng hàng bằng `batch_id` và `slot`, hiện cho người dùng quan sát, rồi nhập vào ô OTP của cùng điện thoại. Chỉ bấm xác nhận nếu nhận diện được duy nhất ô và nút đúng. Trạng thái hiện chỉ ghi đã xong các bước được hướng dẫn; chưa xác nhận tài khoản thành công.
 5. Màn hình khác dự kiến, CAPTCHA, URL lỗi hoặc hết thời gian chờ làm hàng đó dừng và báo lý do. Các máy khác vẫn chạy độc lập.
 

@@ -66,6 +66,27 @@ class PostMenuTests(unittest.TestCase):
         with self.assertRaises(ToolError):
             expired.remaining()
 
+    def test_resume_can_rewind_only_this_phone_to_its_current_screen(self):
+        session = PostMenuSession("batch", 0, "q1")
+        calls = []
+        job = RunJob(0, "batch", None)
+        first = (PostMenuStep("b4", lambda *_: calls.append("b4")),
+                 PostMenuStep("b5", lambda *_: calls.append("b5")))
+        session.state = "PAUSED"
+        session.next_step = 1
+        session.attempts = 1
+        observed = []
+
+        def reconcile(current, active_job, deadline, stop):
+            observed.append((current, active_job.index, deadline.seconds))
+            return 0, first
+
+        session.run(job, first, lambda *_: None, threading.Event(),
+                    reconcile=reconcile)
+        self.assertEqual(observed, [(1, 0, 240)])
+        self.assertEqual(calls, ["b4", "b5"])
+        self.assertEqual((session.state, session.next_step), ("DONE", 2))
+
     def test_first_attempt_clock_starts_when_menu_was_confirmed(self):
         session = PostMenuSession("batch", 0, "q1",
                                   menu_opened_at=time.monotonic() - 181)

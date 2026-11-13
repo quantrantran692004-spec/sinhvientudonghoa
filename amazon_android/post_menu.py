@@ -56,6 +56,10 @@ class PostMenuStep:
     within_attempt: bool = True
 
 
+Reconcile = Callable[[int, RunJob, AttemptDeadline, threading.Event],
+                     tuple[int, tuple[PostMenuStep, ...]] | None]
+
+
 @dataclass
 class PostMenuSession:
     batch_id: str
@@ -69,7 +73,8 @@ class PostMenuSession:
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
     def run(self, job: RunJob, steps: tuple[PostMenuStep, ...],
-            emit: Progress, stop: threading.Event) -> None:
+            emit: Progress, stop: threading.Event,
+            reconcile: Reconcile | None = None) -> None:
         """Run this phone only; errors pause at the same step for manual repair."""
         if not steps:
             raise ValueError("Post-menu steps have not been supplied")
@@ -78,6 +83,7 @@ class PostMenuSession:
         with self._lock:
             if self.state not in {"READY", "PAUSED"}:
                 return
+            was_paused = self.state == "PAUSED"
             self.attempts += 1
             started = (self.menu_opened_at if self.attempts == 1
                        and self.menu_opened_at is not None else time.monotonic())
@@ -87,6 +93,28 @@ class PostMenuSession:
         emit(self.index,
              f"{self.profile_name} · lượt {self.attempts}, {deadline.seconds // 60} phút",
              "post_running", self.profile_name)
+        if was_paused and reconcile is not None:
+            try:
+                resumed = reconcile(self.next_step, job, deadline, stop)
+                if resumed is not None:
+                    target, replacement = resumed
+                    if target < 0 or target > self.next_step or len(replacement) != len(steps):
+                        raise ValueError("Invalid resume step")
+                    with self._lock:
+                        self.next_step = target
+                    steps = replacement
+                    emit(self.index, f"Đọc lại màn hiện tại · tiếp từ {steps[target].name}",
+                         "post_running", self.profile_name)
+            except Exception as exc:
+                reason = str(exc) if isinstance(exc, ToolError) else type(exc).__name__
+                step_name = steps[self.next_step].name
+                with self._lock:
+                    self.state = "PAUSED"
+                    self.last_error = f"{step_name}: {reason}"
+                emit(self.index,
+                     f"Dừng tại {step_name}: {reason} · sửa trên máy rồi bấm Tiếp tục",
+                     "post_paused", self.profile_name)
+                return
         while self.next_step < len(steps):
             step = steps[self.next_step]
             try:

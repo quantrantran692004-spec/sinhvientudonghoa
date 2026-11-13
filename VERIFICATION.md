@@ -96,11 +96,11 @@ Trên `Amazon 01`, công cụ mở ADB Shell bằng UIA nền, xác nhận Andro
 
 ## Q1 từ menu ba gạch tới OTP SMS — 13/11/2026
 
-- PASS: 111 bài `python -m unittest discover -s tests -q`, gồm phân loại các màn b1–b11, ngăn bấm gửi SMS/Create lặp khi màn phản hồi chậm, ánh xạ ADB serial đúng profile, kiểm tra URL OTP riêng từng máy trong luồng b4–b11 dùng chung, đường gắn q1/q2 đã có chỉ chạy sau khi xác nhận Running + menu, bảng 12 hàng có cột trống/thẻ/URL dạng link Markdown cùng hàng, và form tạo Profile chỉ được điền sau khi New Profile mở thật.
+- PASS: 118 bài `python -m unittest discover -s tests -q`, gồm phân loại các màn b1–b11, ngăn bấm gửi SMS/Create lặp khi màn phản hồi chậm, ánh xạ ADB serial đúng profile, kiểm tra URL OTP riêng từng máy trong luồng b4–b11 dùng chung, đường gắn q1/q2 đã có chỉ chạy sau khi xác nhận Running + menu, bảng 12 hàng có cột trống/thẻ/URL dạng link Markdown cùng hàng, và form tạo Profile chỉ được điền sau khi New Profile mở thật.
 - PASS: smoke test cửa sổ desktop dán 12 hàng thẻ + URL, hiện `count=12`, hàng Máy 12 giữ đúng thẻ/URL và bảng chỉ hiện đuôi thẻ. Mô phỏng gắn q1 từ menu vẫn giữ 12 hàng; nút chạy mẻ và Tiếp tục của q2 bị khóa.
 - PASS: khởi tạo cửa sổ desktop với nút **Thử q1 từ menu ba gạch**.
 - READ-ONLY: kiểm tra Swarmote ngày 13/11/2026 cho q1 `Offline`, Device ID `ACN987500546883608`.
-- NOT TESTED: thao tác thật b1–b11 trên q1. q1 đang Offline nên đường thử cần người dùng Start q1 và mở menu ba gạch.
+- Tại phép kiểm tra ban đầu, chưa thử b1–b11 thật vì q1 Offline. Sau đó người dùng đã thử q1 và cung cấp các lỗi b6/b9/b10; xem mục năm ảnh lỗi bên dưới. Chưa có lượt hoàn tất b1–b11 trên q1.
 - NOT TESTED: GET URL OTP thật và màn Amazon sau nút `Create your Amazon account`. Tool chưa xác nhận tài khoản đã tạo thành công từ ảnh hiện có.
 - NOT TESTED: b1–b11 trên q2 thật. Hai ảnh q2 chỉ xác nhận ba thao tác riêng; mã đã nối b4–b11 dùng chung và nút thử q2 xuất hiện khi chọn Máy 2.
 
@@ -109,3 +109,10 @@ Trên `Amazon 01`, công cụ mở ADB Shell bằng UIA nền, xác nhận Andro
 - UIA read-only thấy danh sách hiện có q1, q2, q3 và nút New Profile. Với tên q4 vắng trên cùng trang, `profile_status` mới trả `ProfileNotFound` mà không thay đổi ô tìm kiếm.
 - Lệnh UIA `Invoke` vào New Profile khi cửa sổ quản lý bị che có thể trả thành công nhưng không mở form. Đã sửa nhánh tạo: đưa cửa sổ quản lý lên trước, bấm New Profile và xác nhận đủ dấu hiệu form trước khi điền tên/proxy. Test Proxy và Create cũng kích hoạt cửa sổ trước khi bấm; tùy chọn ẩn cửa sổ vẫn ẩn giữa các lần bấm.
 - PASS trực tiếp: kích hoạt New Profile theo cách mới làm form xuất hiện; bấm Cancel trở lại danh sách. Không nhập proxy và không gửi Create trong phép thử này.
+
+## Năm ảnh lỗi q1 và sửa luồng chung — 13/11/2026
+
+- Người dùng gửi ảnh q1 đang ở form SĐT trống, b6 lỗi vùng bấm US +1, b9 có nhiều Continue, b10 URL OTP HTTP 403 trước khi gửi SMS và b10 không ở màn chọn SMS. Người dùng xác nhận q1 hiện ở form SĐT.
+- Đã sửa `account_flow.py` dùng chung cho mọi máy: chạm ô ở b4; cuộn qua mục quốc gia ẩn/không có bounds; lọc nút Continue đang hiển thị và có thể bấm; bấm gửi SMS rồi mới đọc URL. Tiếp tục có thể quay về b4 từ màn SĐT mà không xóa hàng dữ liệu. Màn SMS đã được người dùng mở thủ công được nhận mà không bấm gửi lần hai.
+- `otp.py` thử lại HTTP 403 trong giới hạn chờ sau khi SMS được gửi. Nếu kéo dài, dừng tại b11 để kiểm tra link của đúng hàng. Vì APIFC chỉ trả nội dung SMS và không có dấu thời gian, lần đầu sau gửi chưa thể chứng minh mã khác mã cũ nếu không đọc trước.
+- PASS mô phỏng: `118/118` unittest. Lệnh `python -m amazon_android.cli cloud-scan` trong môi trường này báo không tìm thấy ADB Swarmote/Android SDK; chưa thử lại trên q1/q2 thật, chưa gọi URL OTP thật và chưa xác minh màn sau Create.

@@ -38,6 +38,26 @@ Các ảnh người dùng gửi đã được sao chép vào `flow_images/` đ�
 
 [09_sms_otp.png](flow_images/q1/09_sms_otp.png): Verify mobile number, ô OTP SMS và nút Create b11. **Chưa có ảnh sau khi bấm Create.**
 
+## q1 ảnh 10 — Form SĐT hiện tại
+
+[10_identifier_current.png](flow_images/q1/10_identifier_current.png): q1 ở màn `Sign in or create account` với ô SĐT trống. Người dùng xác nhận đây là màn hiện tại sau các lần dừng. Khi bấm Tiếp tục, luồng chung cần đọc lại màn, quay về b4 và chạm ô trước khi gõ.
+
+## q1 ảnh 11 — Lỗi b6 vùng bấm
+
+[11_b6_invalid_region.png](flow_images/q1/11_b6_invalid_region.png): thông báo `Vùng bấm Amazon không hợp lệ` khi chọn US +1. Cây UI có thể có mục US ẩn hoặc bounds bằng 0; cần cuộn đến mục đang hiển thị thay vì bấm mục ẩn.
+
+## q1 ảnh 12 — Lỗi b9 Continue
+
+[12_b9_continue_ambiguous.png](flow_images/q1/12_b9_continue_ambiguous.png): thông báo có nhiều phần tử `Continue`. Chọn nút đang hiển thị, có thể bấm và thuộc form tên.
+
+## q1 ảnh 13 — Lỗi URL OTP ở b10
+
+[13_b10_otp_http403.png](flow_images/q1/13_b10_otp_http403.png): URL OTP trả HTTP 403 trước khi tool gửi SMS. Người dùng yêu cầu bấm gửi SMS trước, rồi mới đọc URL.
+
+## q1 ảnh 14 — Lỗi b10 màn không khớp
+
+[14_b10_not_whatsapp.png](flow_images/q1/14_b10_not_whatsapp.png): b10 báo q1 chưa ở màn chọn SMS; cần đọc lại màn hiện tại khi Tiếp tục và quay về đúng bước chung của máy này.
+
 ## q2 ảnh 01 — Trang chủ
 
 [01_home.png](flow_images/q2/01_home.png): b1 bấm tab nhà, xem 2–5 giây.

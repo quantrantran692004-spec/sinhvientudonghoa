@@ -60,7 +60,7 @@ Tìm Pets trên menu hiện tại, cuộn khi cần và bấm. Bước chung b4 
 
 ## Chung b4 — Sign In từ menu
 
-Tìm hàng Sign In ở cuối menu bằng chữ trong UI, cuộn khi cần, bấm và xác nhận form `Sign in or create account`. **Đã nối mã cho q1/q2; chưa thử thật luồng mới.**
+Tìm hàng Sign In ở cuối menu bằng chữ trong UI, cuộn khi cần, bấm và xác nhận form `Sign in or create account`. **Chạm vào ô SĐT để lấy focus** trước b5; nếu đã ở form này khi bấm Tiếp tục thì vẫn chạm vào ô. **Đã sửa mã chung cho q1/q2 sau ảnh q1 ở form SĐT; chưa xác minh lại trên máy thật.**
 
 ## Chung b5 — Gõ số điện thoại
 
@@ -68,7 +68,7 @@ Gõ nguyên chuỗi SĐT của đúng hàng từng ký tự vào ô `Enter mobil
 
 ## Chung b6 — Chọn United States +1
 
-Sau khi gõ số, mở Country/region code, cuộn tìm United States +1, chọn và đọc lại số/mã quốc gia. Ảnh b6 do người dùng gửi có tiêu đề cửa sổ q6, chỉ là tham chiếu UI. **Đã nối mã; chưa xác minh trên q1/q2 thật.**
+Sau khi gõ số, mở Country/region code, cuộn tới gần cuối tìm United States +1, chọn và đọc lại số/mã quốc gia. Không bấm mục US ẩn có vùng `[0,0][0,0]`; tiếp tục cuộn đến mục đang hiển thị và có vùng bấm hợp lệ. Ảnh b6 ban đầu có tiêu đề cửa sổ q6, chỉ là tham chiếu UI. q1 đã báo lỗi vùng bấm b6; **đã sửa mã chung, chưa xác minh lại trên máy thật.**
 
 ## Chung b7 — Continue số điện thoại
 
@@ -80,15 +80,15 @@ Xác nhận màn `Looks like you are new to Amazon` và SĐT, rồi bấm `Proce
 
 ## Chung b9 — Nhập tên và Continue
 
-Trên form Create account, gõ `First and last name` từ đúng hàng từng ký tự, đọc lại rồi bấm Continue. Ảnh chưa có ô mật khẩu; không tự điền mật khẩu vào chỗ khác. **Đã nối mã; chưa thử thật.**
+Trên form Create account, gõ `First and last name` từ đúng hàng từng ký tự, đọc lại rồi bấm Continue đang hiển thị, có thể bấm và nằm dưới ô tên. Bỏ qua bản sao nhãn ẩn hoặc không thể bấm. Ảnh chưa có ô mật khẩu; không tự điền mật khẩu vào chỗ khác. q1 đã báo lỗi nhiều Continue; **đã sửa mã chung, chưa xác minh lại trên máy thật.**
 
 ## Chung b10 — Chuyển WhatsApp sang SMS
 
-Ở màn Verify with WhatsApp, xác nhận đúng SĐT, đọc mã cũ từ URL OTP của hàng, bấm `Send code by SMS` một lần và chờ màn SMS. Nếu chuyển màn chậm, không bấm gửi lặp. **Đã nối mã; chưa gọi URL thật.**
+Ở màn Verify with WhatsApp, xác nhận đúng SĐT, bấm `Send code by SMS` một lần và chờ màn SMS. **Chỉ sau khi gửi mới đọc URL OTP** của đúng hàng. Nếu người dùng đã bấm gửi và đang ở màn SMS khi Tiếp tục, nhận màn đó mà không bấm gửi lặp. HTTP 403 trước khi gửi không được chặn thao tác gửi nữa; HTTP 403 kéo dài sau khi gửi làm máy dừng tại b11. **Đã sửa mã chung theo ảnh lỗi q1; chưa xác minh lại trên máy thật.**
 
 ## Chung b11a — Lấy và gõ OTP SMS
 
-Chờ phản hồi `yes|Amazon: 123456 is your sign-in code.` trên URL riêng, chỉ lấy sáu số mới khác mã cũ, gõ từng số vào `Enter security code` và đọc lại. Đồng hồ lượt của máy kết thúc khi ô đúng. **Đã nối mã; chưa thử thật.**
+Chờ phản hồi `yes|Amazon: 123456 is your sign-in code.` trên URL riêng sau khi gửi SMS, lấy đúng sáu số, gõ từng số vào `Enter security code` và đọc lại. Nếu URL tạm trả HTTP 403, tiếp tục chờ trong giới hạn; nếu vẫn 403 thì dừng để kiểm tra URL của hàng. Phản hồi chỉ có mã, không có dấu thời gian nên chưa thể chứng minh mã là mới khi URL từng có mã cũ. Đồng hồ lượt của máy kết thúc khi ô đúng. **Đã sửa mã và test mô phỏng; chưa thử thật sau sửa.**
 
 ## Chung b11b — Bấm Create your Amazon account
 
@@ -96,7 +96,7 @@ Sau khi OTP đúng, bấm Create một lần với khoảng kiểm tra riêng; n
 
 ## E01 — Dừng lỗi và Tiếp tục
 
-Mỗi máy có bước hiện tại, lỗi và đồng hồ riêng. Khi lỗi, máy dừng tại chỗ; người dùng sửa trực tiếp rồi bấm Tiếp tục để đọc lại UI, tránh gửi SMS/Create lặp. Chu kỳ lượt 3→4→5→4 phút rồi lặp. **Đã nối mã và test mô phỏng; cần thử thật.**
+Mỗi máy có bước hiện tại, lỗi và đồng hồ riêng. Khi lỗi, máy dừng tại chỗ; người dùng sửa trực tiếp rồi bấm Tiếp tục để đọc lại UI. Nếu q1/q2 đang ở màn SĐT dù mốc lưu đã tới b10, tool quay về b4 của chính máy đó và tạo lại trạng thái bước; không xóa hàng dữ liệu. Không gửi SMS hoặc bấm Create lặp khi màn phản hồi chậm; mốc Create đã bấm không tự tua lại. Chu kỳ lượt 3→4→5→4 phút rồi lặp. **Đã nối mã và test mô phỏng; cần thử thật sau sửa.**
 
 ## U01 — Màn sau Create chưa được hướng dẫn
 
