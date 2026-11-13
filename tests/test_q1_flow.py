@@ -4,13 +4,15 @@ from types import SimpleNamespace
 from subprocess import TimeoutExpired
 from unittest.mock import patch
 
+from PIL import Image, ImageDraw
+
 from amazon_android.cloud import CloudPhone
 from amazon_android.core import AMAZON_PACKAGE, ToolError
 from amazon_android.post_menu import AttemptDeadline, PostMenuSession
 from amazon_android.account_flow import (
     _button, _find_scrolling, _national_phone, _parse_ui_nodes, _read_nodes, _scroll_up, _unique,
     build_common_steps, menu_layout, resume_common_index,
-    route_list_menu, screen,
+    route_list_menu, screen, _yellow_form_button,
 )
 from amazon_android.q1_flow import build_q1_steps
 from amazon_android.q2_flow import build_q2_steps
@@ -546,16 +548,51 @@ class Q1FlowTests(unittest.TestCase):
     def test_create_is_not_pressed_twice_after_screen_changes(self):
         create = build_q1_steps(self.phone, lambda code: None)[-1].action
         sms = [node("Verify mobile number"), node("Enter security code"),
-               node("Create your Amazon account")]
+               node("Create your Amazon account"), node(self.job.account.phone)]
         next_screen = [node("Next page")]
         with patch("amazon_android.account_flow._read_nodes",
                    side_effect=[sms, next_screen, next_screen]), \
              patch("amazon_android.account_flow._field",
-                   return_value={"text": "222222"}), \
+                   return_value=node("222222", bounds="[10,1][200,9]")), \
              patch("amazon_android.account_flow._tap") as tap:
             create(self.job, AttemptDeadline(30), self.stop)
             create(self.job, AttemptDeadline(30), self.stop)
         tap.assert_called_once()
+
+    def test_visual_fallback_accepts_one_yellow_form_button_and_rejects_two(self):
+        field = node("", bounds="[25,100][335,140]")
+        with Image.new("RGB", (360, 640), "white") as image:
+            draw = ImageDraw.Draw(image)
+            draw.rounded_rectangle((25, 330, 334, 369), radius=18, fill="#ffd814")
+            draw.text((150, 345), "Continue", fill="black")
+            result = _yellow_form_button(image, field)
+            self.assertEqual(result["bounds"], "[25,330][335,370]")
+            draw.rounded_rectangle((25, 240, 334, 279), radius=18, fill="#ffd814")
+            with self.assertRaisesRegex(ToolError, "nút vàng"):
+                _yellow_form_button(image, field)
+            self.assertEqual(_yellow_form_button(image, field, labels=((140, 342, 220, 358),)),
+                             result)
+
+    def test_create_uses_visual_fallback_only_for_matching_phone_and_taps_once(self):
+        create = build_common_steps(self.phone, lambda _: None)[-1].action
+        otp = node("222222", kind="android.widget.EditText", bounds="[25,100][335,140]")
+        sms = [node("Verify mobile number"), node("Enter security code"),
+               node(self.job.account.phone), otp]
+        wrong_phone = sms[:2] + [otp]
+        button = node("", bounds="[25,155][335,195]")
+        next_screen = [node("Next page")]
+        with patch("amazon_android.account_flow._read_nodes",
+                   side_effect=[wrong_phone, sms, next_screen, next_screen]), \
+             patch("amazon_android.account_flow._visual_form_button", return_value=button) as visual, \
+             patch("amazon_android.account_flow._tap") as tap:
+            with self.assertRaisesRegex(ToolError, "SĐT"):
+                create(self.job, self.deadline, self.stop)
+            visual.assert_not_called()
+            create(self.job, self.deadline, self.stop)
+            create(self.job, self.deadline, self.stop)
+        visual.assert_called_once_with(self.phone, sms, "Create your Amazon account", otp,
+                                      self.deadline)
+        tap.assert_called_once_with(self.phone, button, self.deadline)
 
 
 if __name__ == "__main__":

@@ -12,10 +12,13 @@ import threading
 import time
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
+from io import BytesIO
 from subprocess import TimeoutExpired
 from typing import Callable
 
-from .cloud import CloudPhone, cloud_adb
+from PIL import Image
+
+from .cloud import CloudPhone, cloud_adb, cloud_screenshot
 from .core import AMAZON_PACKAGE, ToolError
 from .otp import wait_for_new_otp
 from .post_menu import AttemptDeadline, PostMenuSession, PostMenuStep, type_characters
@@ -252,6 +255,65 @@ def _button(nodes: list[dict[str, str]], label: str,
                     return aligned[0]
             break
     raise _ActionNotResolved(f"Không xác định được duy nhất nút '{label}' trên máy này")
+
+
+def _yellow_form_button(image: Image.Image, field: dict[str, str], *,
+                        labels: tuple[tuple[int, int, int, int], ...] = ()) -> dict[str, str]:
+    """Find one wide yellow action aligned below the verified input field."""
+    left, top, right, bottom = _bounds(field)
+    width = right - left
+    height = bottom - top
+    if not (0 <= left < right <= image.width and 0 <= top < bottom < image.height):
+        raise _ActionNotResolved("Vùng ô nhập không khớp ảnh màn hình Android")
+    pixels = image.convert("RGB").load()
+    rows = []
+    for y in range(bottom, min(image.height, bottom + 8 * height)):
+        yellow = 0
+        for x in range(left, right, 3):
+            r, g, b = pixels[x, y]
+            if r >= 230 and 160 <= g <= 239 and r > g and b <= 95:
+                yellow += 3
+        if yellow >= width * 0.75:
+            rows.append(y)
+    bands = []
+    for y in rows:
+        if not bands or y - bands[-1][-1] > 3:
+            bands.append([])
+        bands[-1].append(y)
+    matches = [band for band in bands if height * 0.4 <= len(band) <= height * 1.8]
+    if len(matches) > 1:
+        matches = [band for band in matches if any(
+            left <= (x1 + x2) // 2 < right and band[0] <= (y1 + y2) // 2 <= band[-1]
+            for x1, y1, x2, y2 in labels)]
+    if len(matches) != 1:
+        raise _ActionNotResolved("Chưa xác định được một nút vàng dưới ô nhập từ ảnh Android")
+    band = matches[0]
+    return {"bounds": f"[{left},{band[0]}][{right},{band[-1] + 1}]"}
+
+
+def _visual_form_button(phone: CloudPhone, nodes: list[dict[str, str]], label: str,
+                        field: dict[str, str],
+                        deadline: AttemptDeadline) -> dict[str, str]:
+    labels = tuple(_bounds(node) for node in nodes if _visible(node) and _has([node], label))
+    timeout = max(1, math.ceil(min(6, deadline.remaining())))
+    try:
+        screenshot = cloud_screenshot(phone, timeout=timeout)
+        with Image.open(BytesIO(screenshot)) as image:
+            return _yellow_form_button(image, field, labels=labels)
+    except _ActionNotResolved:
+        raise
+    except ToolError as exc:
+        raise _ActionNotResolved(str(exc)) from exc
+    except OSError:
+        raise _ActionNotResolved("Không đọc được ảnh màn hình Android") from None
+
+
+def _form_action(phone: CloudPhone, nodes: list[dict[str, str]], label: str,
+                 field: dict[str, str], deadline: AttemptDeadline) -> dict[str, str]:
+    try:
+        return _button(nodes, label, below=field)
+    except _ActionNotResolved:
+        return _visual_form_button(phone, nodes, label, field, deadline)
 
 
 def _wait_screen(phone: CloudPhone, expected: set[str],
@@ -628,21 +690,22 @@ def build_common_steps(phone: CloudPhone,
         if screen(nodes) != "CREATE_FORM":
             raise ToolError("Amazon không còn ở form nhập tên")
         try:
-            button = _button(nodes, "Continue", below=_field(nodes, NAME_FIELD))
+            button = _form_action(phone, nodes, "Continue", _field(nodes, NAME_FIELD), deadline)
         except _ActionNotResolved:
             timeout = max(1, math.ceil(min(6, deadline.remaining())))
             ime = cloud_adb(phone, "shell", "dumpsys", "input_method", timeout=timeout)
-            if not re.search(r"\bmInputShown=true\b", ime.stdout):
+            if re.search(r"\bmInputShown=true\b", ime.stdout):
+                cloud_adb(phone, "shell", "input", "keyevent", "KEYCODE_BACK", timeout=timeout)
+                nodes = _read_nodes(phone, deadline, stop)
+                if screen(nodes) != "CREATE_FORM":
+                    raise ToolError("Amazon đã rời form nhập tên sau khi đóng bàn phím")
+                _check_summary(nodes, job)
+            else:
                 raise
-            cloud_adb(phone, "shell", "input", "keyevent", "KEYCODE_BACK", timeout=timeout)
-            nodes = _read_nodes(phone, deadline, stop)
-            if screen(nodes) != "CREATE_FORM":
-                raise ToolError("Amazon đã rời form nhập tên sau khi đóng bàn phím")
-            _check_summary(nodes, job)
             field = _field(nodes, NAME_FIELD)
             if field.get("text", "") != job.account.full_name:
-                raise ToolError("Chưa xác nhận được tên sau khi đóng bàn phím")
-            button = _button(nodes, "Continue", below=field)
+                raise ToolError("Chưa xác nhận được tên trên form")
+            button = _form_action(phone, nodes, "Continue", field, deadline)
         _tap_for_transition(phone, button, deadline)
         _wait_screen(phone, {"WHATSAPP", "SMS"}, deadline, stop)
 
@@ -713,8 +776,13 @@ def build_common_steps(phone: CloudPhone,
         value = _field(nodes, OTP_FIELD).get("text", "")
         if not re.fullmatch(r"[0-9]{6}", value):
             raise ToolError("Máy này chưa nhập đủ OTP để tạo tài khoản")
+        if state.code and value != state.code:
+            raise ToolError("Mã đang hiện khác mã đã xác nhận trên máy này")
         if not state.create_pressed:
-            _tap_for_transition(phone, _button(nodes, "Create your Amazon account"), deadline)
+            _check_summary(nodes, job)
+            field = _field(nodes, OTP_FIELD)
+            button = _form_action(phone, nodes, "Create your Amazon account", field, deadline)
+            _tap_for_transition(phone, button, deadline)
             state.create_pressed = True
         until = time.monotonic() + deadline.allowance(10)
         while time.monotonic() < until:

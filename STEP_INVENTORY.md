@@ -114,6 +114,8 @@ Sau mốc 4 giây từ lúc gửi, đọc URL đúng hàng bằng Chrome ẩn ho
 
 ## Chung b11b — Bấm Create your Amazon account
 
+B9 và b11 ưu tiên chữ và mô tả nút trong cây Android. Nếu chưa chọn được nút, tìm vùng nút vàng rộng dưới ô đã xác nhận bằng ảnh Android hiện tại. Nếu có nhiều vùng, chỉ chọn khi chữ của nút trong cây UI xác định được duy nhất một vùng.
+
 Sau khi OTP đúng, bấm Create một lần với khoảng kiểm tra riêng; nếu màn chưa chuyển, dừng để người dùng xem, không bấm lặp. **Đã nối mã; chưa có ảnh màn kết quả. Không khẳng định tài khoản thành công.**
 
 ## E01 — Dừng lỗi và Tiếp tục

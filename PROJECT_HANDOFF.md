@@ -19,6 +19,8 @@ Menu ba gạch có thêm biến thể dạng danh sách: trên các máy đã n�
 
 ## Trạng thái kiểm chứng và giới hạn
 
+- B9 Continue và b11 Create dùng chữ, mô tả và quan hệ điều khiển từ cây Android trước. Nếu vẫn mơ hồ, chụp trực tiếp màn Android vào bộ nhớ và tìm nút vàng rộng bên dưới ô đã xác nhận. Nếu có nhiều vùng vàng, chỉ chọn khi vị trí nhãn đúng trong cây UI xác định duy nhất một vùng. B11 kiểm tra SĐT trước nhánh ảnh và đối chiếu OTP nếu phiên đã có mã. Test mô phỏng với vùng vàng và màn SMS. Chưa kiểm tra trên Swarmote thật vì phiên này không tìm thấy ADB.
+
 - Luồng dùng chung tự đọc lại khi ADB hết hạn, lấy file thất bại hoặc trả XML chưa hợp lệ. Trong lúc chờ màn kế tiếp, các lỗi đọc tạm thời được thử lại theo thời hạn. Nếu cú bấm chuyển màn hết hạn ở ADB, kiểm tra màn sau cú bấm trước khi quyết định bước tiếp theo. Gửi SMS và Create vẫn giữ dấu đã bấm để tránh gửi lặp. Khi không thể xác nhận, thông báo ghi màn đọc được và màn cần thấy, không kèm dữ liệu tài khoản. 148 bài test đã qua, gồm cú bấm SMS bị timeout nhưng đã chuyển màn và XML lỗi được đọc lại. Chưa xác minh trên Swarmote thật.
 
 - B11 thử Chrome ẩn, Edge ẩn rồi tự mở một cửa sổ Chrome riêng nếu chưa đọc được mã. Tool dành một phần thời hạn đọc OTP cho cửa sổ này, chờ người dùng xử lý xác minh nếu trang yêu cầu và đóng cửa sổ sau khi lấy mã, hết hạn hoặc dừng. Nếu vẫn lỗi, Tiếp tục giữ phương án nhập tay. Chưa xác minh với APIFC thật.

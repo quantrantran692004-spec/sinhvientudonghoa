@@ -6,6 +6,8 @@ module never requests its credentials or calls undocumented service endpoints.
 from __future__ import annotations
 
 import re
+import subprocess
+import sys
 import time
 from dataclasses import dataclass
 from os import environ
@@ -73,6 +75,19 @@ def cloud_serials() -> dict[str, str]:
             if match and swarmote_tunnel_owner(int(match.group(1))):
                 devices[fields[0]] = fields[1]
     return devices
+
+
+def cloud_screenshot(phone: CloudPhone, *, timeout: int) -> bytes:
+    """Capture Android pixels directly, without writing a screenshot to disk."""
+    try:
+        result = subprocess.run(
+            [str(swarmote_adb_path()), "-s", phone.serial, "exec-out", "screencap", "-p"],
+            stdin=subprocess.DEVNULL, capture_output=True, timeout=timeout, check=True,
+            **({"creationflags": subprocess.CREATE_NO_WINDOW} if sys.platform == "win32" else {}),
+        )
+    except (OSError, subprocess.SubprocessError):
+        raise ToolError("Không chụp được màn hình Android để tìm nút") from None
+    return result.stdout
 
 
 def require_online(phone: CloudPhone) -> None:
