@@ -275,7 +275,7 @@ class Q1FlowTests(unittest.TestCase):
         action = next(step.action for step in build_common_steps(
             self.phone, lambda _code: None) if step.name.startswith("b6"))
         with patch("amazon_android.account_flow._read_nodes",
-                   side_effect=[country + [hidden], [visible]]), \
+                   side_effect=[country + [hidden], country + [visible], country + [visible]]), \
              patch("amazon_android.account_flow._scroll_up") as scroll, \
              patch("amazon_android.account_flow._tap") as tap, \
              patch("amazon_android.account_flow._wait_screen",
@@ -283,6 +283,27 @@ class Q1FlowTests(unittest.TestCase):
             action(self.job, self.deadline, self.stop)
         scroll.assert_called_once()
         self.assertIs(tap.call_args.args[1], visible)
+
+    def test_b6_checks_stable_us_row_and_recovers_from_sg_selection(self):
+        heading = [node("Country/region code")]
+        form = [node("Sign in or create account"), node("Enter mobile number or email")]
+        moving = node("United States +1", bounds="[50,300][320,340]")
+        settled = node("United States +1", bounds="[50,320][320,360]")
+        sg = node("SG +65")
+        end = heading + [node("Zimbabwe +263")]
+        action = next(step.action for step in build_common_steps(self.phone, lambda _: None)
+                      if step.name.startswith("b6"))
+        with patch("amazon_android.account_flow._read_nodes", side_effect=[
+                heading + [moving], heading + [settled], heading + [settled],
+                heading + [settled], heading + [settled]]), \
+             patch("amazon_android.account_flow._wait_screen", side_effect=[
+                 form + [sg], end, form + [node("US +1")]]), \
+             patch("amazon_android.account_flow._scroll_up") as scroll, \
+             patch("amazon_android.account_flow._tap") as tap, \
+             patch.object(self.stop, "wait", return_value=False):
+            action(self.job, self.deadline, self.stop)
+        self.assertEqual([call.args[1] for call in tap.call_args_list], [settled, sg, settled])
+        self.assertTrue(scroll.call_args.kwargs["reverse"])
 
     def test_reads_current_ui_again_after_adb_timeout(self):
         error = ToolError("ADB timeout")

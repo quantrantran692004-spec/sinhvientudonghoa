@@ -476,7 +476,7 @@ def _find_scrolling(phone: CloudPhone, label: str,
                 reverse = True
         previous = visible
         far_from_us = any(re.fullmatch(r"[a-s][^+]*\+\d+", text) for text in visible)
-        fling = country_list and not reverse and (attempt == 0 or far_from_us)
+        fling = country_list and not reverse and (far_from_us or (attempt == 0 and not countries))
         _scroll_up(phone, nodes, deadline, country_list=country_list,
                    fling=fling, reverse=reverse)
         pause = 0.4 if fling else 0.1 if country_list else 0.12
@@ -648,24 +648,37 @@ def build_common_steps(phone: CloudPhone,
     def country(job: RunJob, deadline: AttemptDeadline,
                 stop: threading.Event) -> None:
         nodes = _read_nodes(phone, deadline, stop)
-        if _at_or_after(nodes, "NEW_ACCOUNT"):
-            return
-        if screen(nodes) == "IDENTIFIER":
-            if _has(nodes, "US +1"):
+        while not stop.is_set():
+            deadline.remaining()
+            kind = screen(nodes)
+            if _at_or_after(nodes, "NEW_ACCOUNT"):
                 return
-            candidates = [node for node in nodes if _visible(node) and re.fullmatch(
-                r"[a-z]{2}\s*\+\d+", _text(node))]
-            if len(candidates) != 1:
-                raise ToolError("Không xác định được ô chọn mã quốc gia")
-            _tap_for_transition(phone, candidates[0], deadline)
-            nodes = _wait_screen(phone, {"COUNTRY"}, deadline, stop)
-        if screen(nodes) != "COUNTRY":
-            raise ToolError("Máy này chưa ở danh sách mã quốc gia")
-        _tap_for_transition(phone, _find_scrolling(phone, "United States +1", deadline, stop,
-                                                   country_list=True, nodes=nodes), deadline)
-        nodes = _wait_screen(phone, {"IDENTIFIER"}, deadline, stop)
-        if not _has(nodes, "US +1"):
-            raise ToolError("Amazon chưa xác nhận mã US +1")
+            if kind == "IDENTIFIER":
+                candidates = [node for node in nodes if _visible(node) and re.fullmatch(
+                    r"[a-z]{2}\s*\+\d+", _text(node))]
+                if len(candidates) != 1:
+                    raise ToolError("Không xác định được ô chọn mã quốc gia")
+                if _has(candidates, "US +1"):
+                    return
+                _tap_for_transition(phone, candidates[0], deadline)
+                nodes = _wait_screen(phone, {"COUNTRY"}, deadline, stop)
+            elif kind != "COUNTRY":
+                raise ToolError("Máy này chưa ở danh sách mã quốc gia")
+
+            target = _find_scrolling(phone, "United States +1", deadline, stop,
+                                     country_list=True, nodes=nodes)
+            if stop.wait(deadline.allowance(0.15)):
+                break
+            nodes = _read_nodes(phone, deadline, stop)
+            current = [node for node in nodes if _visible(node) and
+                       _text(node) == "united states +1"]
+            if (screen(nodes) != "COUNTRY" or
+                    {node["bounds"] for node in current} != {target["bounds"]}):
+                continue  # Momentum can move a row between reading and tapping.
+            _tap_for_transition(phone, current[0], deadline)
+            nodes = _wait_screen(phone, {"IDENTIFIER"}, deadline, stop)
+            # If Android landed on another country, reopen and look again.
+        raise ToolError("Đã dừng máy này")
 
     def continue_number(job: RunJob, deadline: AttemptDeadline,
                         stop: threading.Event) -> None:

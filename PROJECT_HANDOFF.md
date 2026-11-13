@@ -19,6 +19,8 @@ Menu ba gạch có thêm biến thể dạng danh sách: trên các máy đã n�
 
 ## Trạng thái kiểm chứng và giới hạn
 
+- B6 xác nhận mục `United States +1` nằm cùng vị trí trong hai lần đọc liên tiếp rồi mới bấm. Nếu form trả mã khác, ví dụ SG +65, mở lại danh sách, tiếp tục tìm và chỉ hoàn tất khi ô mã quốc gia hiện US +1. Nếu danh sách đã tới đáy thì vuốt ngón tay xuống ngắn. Chưa thử trên máy thật.
+
 - B6 kiểm tra danh sách sau khi vuốt mạnh. Nếu hiện các nước sau Mỹ hoặc danh sách đứng yên khi vuốt về cuối, tool vuốt ngón tay xuống từng đoạn ngắn để tìm `United States +1`. B6 tiếp tục tìm trong thời hạn lượt hoặc đến khi người dùng bấm Dừng, kể cả khi vài ảnh chụp cây UI liên tiếp giống nhau. Chưa xác minh thao tác trên Swarmote thật.
 
 - B9 Continue và b11 Create dùng chữ, mô tả và quan hệ điều khiển từ cây Android trước. Nếu vẫn mơ hồ, chụp trực tiếp màn Android vào bộ nhớ và tìm nút vàng rộng bên dưới ô đã xác nhận. Nếu có nhiều vùng vàng, chỉ chọn khi vị trí nhãn đúng trong cây UI xác định duy nhất một vùng. B11 kiểm tra SĐT trước nhánh ảnh và đối chiếu OTP nếu phiên đã có mã. Test mô phỏng với vùng vàng và màn SMS. Chưa kiểm tra trên Swarmote thật vì phiên này không tìm thấy ADB.
