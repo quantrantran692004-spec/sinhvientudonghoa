@@ -323,14 +323,15 @@ class Q1FlowTests(unittest.TestCase):
         last = [node("Wallis and Futuna +681")]
         target = node("United States +1")
         with patch("amazon_android.account_flow._read_nodes",
-                   side_effect=[last, last, [target]]), \
+                   side_effect=[[node("United Kingdom +44")], last, last, last, [target]]), \
              patch("amazon_android.account_flow._scroll_up") as scroll, \
              patch.object(self.stop, "wait", return_value=False):
             self.assertIs(_find_scrolling(self.phone, "United States +1",
                                           self.deadline, self.stop,
                                           country_list=True), target)
         self.assertFalse(scroll.call_args_list[0].kwargs["reverse"])
-        self.assertTrue(scroll.call_args_list[1].kwargs["reverse"])
+        self.assertEqual([call.kwargs["reverse"] for call in scroll.call_args_list[1:]],
+                         [True, True, True])
 
     def test_phone_uses_input_digits_then_checks_us_national_number(self):
         self.assertEqual(_national_phone(self.job), "2025550123")

@@ -1,17 +1,17 @@
 # Graph Report - sinhvien  (2026-11-13)
 
 ## Corpus Check
-- 66 files · ~53,312 words
+- 66 files · ~53,349 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 2 file(s) not represented in the graph (top: (none) 1, .pyw 1)
 
 ## Summary
-- 898 nodes · 2815 edges · 45 communities (39 shown, 6 thin omitted)
-- Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 356 edges (avg confidence: 0.9)
+- 898 nodes · 2817 edges · 44 communities (39 shown, 5 thin omitted)
+- Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 358 edges (avg confidence: 0.9)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a140edb4`
+- Built from commit: `fd753915`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -52,7 +52,6 @@
 - MENU_ROUTING.md
 - PLAN.md
 - CloudPhone
-- visit_home
 - ProfilesNavigationTests
 - _create_profile_form
 - Bàn giao trạng thái dự án — 13/11/2026
@@ -88,7 +87,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (45 total, 6 thin omitted)
+## Communities (44 total, 5 thin omitted)
 
 ### Community 0 - "core.py"
 Cohesion: 0.09
@@ -139,8 +138,8 @@ Cohesion: 0.20
 Nodes (8): BatchItem, parse_proxy_line(), prepare_five(), ToolError, create_profile(), ProxyConfig, BatchSafetyTests, CreationWindowVisibilityTests
 
 ### Community 13 - "account_flow.py"
-Cohesion: 0.17
-Nodes (19): _ActionNotResolved, _bounds(), _button(), _find_scrolling(), _form_action(), _has(), home_visible(), _parse_ui_nodes() (+11 more)
+Cohesion: 0.13
+Nodes (21): _ActionNotResolved, _bounds(), _button(), _find_scrolling(), _form_action(), _has(), home_visible(), _parse_ui_nodes() (+13 more)
 
 ### Community 14 - "Biên bản kiểm tra thực tế — 2026-11-12"
 Cohesion: 0.11
@@ -249,12 +248,12 @@ Nodes (4): _nodes(), open_home_menu(), _tap(), HomeMenuTests
 ## Knowledge Gaps
 - **1 isolated node(s):** `amazon-android-tool`
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 265 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **6 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **5 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `ToolError` connect `ToolError` to `core.py`, `build_common_steps`, `wait_for_new_otp`, `Window`, `ToolError`, `swarmote_desktop.py`, `RunnerTests`, `desktop.py`, `002 — Gán qN duy nhất và không dùng nhầm proxy của Profile cũ`, `account_flow.py`, `desktop.py`, `_read_nodes`, `desktop.py`, `profile_status`, `ProfileRegistry`, `CloudPhone`, `visit_home`, `ProfilesNavigationTests`, `_create_profile_form`, `unittest`, `test_q1_flow.py`, `_main_window`, `open_home_menu`?**
+- **Why does `ToolError` connect `ToolError` to `core.py`, `build_common_steps`, `wait_for_new_otp`, `Window`, `ToolError`, `swarmote_desktop.py`, `RunnerTests`, `desktop.py`, `002 — Gán qN duy nhất và không dùng nhầm proxy của Profile cũ`, `account_flow.py`, `desktop.py`, `_read_nodes`, `desktop.py`, `profile_status`, `ProfileRegistry`, `CloudPhone`, `ProfilesNavigationTests`, `_create_profile_form`, `unittest`, `test_q1_flow.py`, `_main_window`, `open_home_menu`?**
   _High betweenness centrality (0.437) - this node is a cross-community bridge._
 - **Are the 29 inferred relationships involving `ToolError` (e.g. with `_read_nodes()` and `_tap_for_transition()`) actually correct?**
   _`ToolError` has 29 INFERRED edges - model-reasoned connections that need verification._
@@ -262,7 +261,7 @@ _Questions this graph is uniquely positioned to answer:_
   _1 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `core.py` be split into smaller, more focused modules?**
   _Cohesion score 0.09181784524250278 - nodes in this community are weakly interconnected._
-- **Why does `build_common_steps()` connect `build_common_steps` to `MENU_ROUTING.md`, `wait_for_new_otp`, `CloudPhone`, `ToolError`, `visit_home`, `_create_profile_form`, `desktop.py`, `test_q1_flow.py`, `ToolError`, `account_flow.py`, `_read_nodes`, `RunJob`, `Quy tắc tự động hóa sau menu ba gạch`, `Tiến độ hướng dẫn bằng ảnh — cập nhật 13/11/2026`?**
+- **Why does `build_common_steps()` connect `build_common_steps` to `MENU_ROUTING.md`, `wait_for_new_otp`, `CloudPhone`, `ToolError`, `_create_profile_form`, `desktop.py`, `test_q1_flow.py`, `ToolError`, `account_flow.py`, `_read_nodes`, `RunJob`, `Quy tắc tự động hóa sau menu ba gạch`, `Tiến độ hướng dẫn bằng ảnh — cập nhật 13/11/2026`?**
   _High betweenness centrality (0.120) - this node is a cross-community bridge._
 - **Are the 36 inferred relationships involving `CloudPhone` (e.g. with `build_common_steps()` and `_ensure_menu()`) actually correct?**
   _`CloudPhone` has 36 INFERRED edges - model-reasoned connections that need verification._

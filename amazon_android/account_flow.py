@@ -438,9 +438,12 @@ def _find_scrolling(phone: CloudPhone, label: str,
                     country_list: bool = False,
                     nodes: list[dict[str, str]] | None = None) -> dict[str, str]:
     previous = None
-    previous_reverse = False
-    visited = set()
-    for attempt in range(30):
+    reverse = False
+    attempt = 0
+    while country_list or attempt < 30:
+        if stop.is_set():
+            raise ToolError("Đã dừng máy này")
+        deadline.remaining()
         if nodes is None:
             nodes = _read_nodes(phone, deadline, stop)
         target = label.casefold()
@@ -462,23 +465,24 @@ def _find_scrolling(phone: CloudPhone, label: str,
             return _unique(matches, label, starts=starts)
         visible = tuple(_text(node) for node in nodes if _visible(node) and _text(node))
         stalled = visible == previous
-        if stalled and (not country_list or previous_reverse):
+        if stalled and not country_list:
             break
-        reverse = country_list and (stalled or any(
-            text.startswith(("uruguay +", "uzbekistan +", "vanuatu +", "vatican city +",
-                             "venezuela +", "vietnam +", "yemen +", "zambia +", "zimbabwe +"))
-            for text in visible))
-        position = (visible, reverse)
-        if position in visited:
-            break
-        visited.add(position)
-        previous, previous_reverse = visible, reverse
+        if country_list:
+            countries = [text.rsplit("+", 1)[0].strip() for text in visible
+                         if re.fullmatch(r"[a-z][^+]*\+\d+", text)]
+            if countries and max(countries) < "united states" and not stalled:
+                reverse = False
+            elif stalled or any(name > "united states" for name in countries):
+                reverse = True
+        previous = visible
         far_from_us = any(re.fullmatch(r"[a-s][^+]*\+\d+", text) for text in visible)
         fling = country_list and not reverse and (attempt == 0 or far_from_us)
         _scroll_up(phone, nodes, deadline, country_list=country_list,
                    fling=fling, reverse=reverse)
-        stop.wait(0.4 if fling else 0.1 if country_list else 0.12)
+        pause = 0.4 if fling else 0.1 if country_list else 0.12
+        stop.wait(deadline.allowance(pause))
         nodes = None
+        attempt += 1
     raise ToolError(f"Không tìm thấy '{label}' sau khi cuộn máy này")
 
 
