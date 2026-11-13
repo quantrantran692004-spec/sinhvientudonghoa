@@ -68,6 +68,10 @@ Tìm hàng Sign In ở cuối menu bằng chữ trong UI, cuộn khi cần, bấ
 
 Ảnh q1 mới cho thấy b4 dừng vì cây UI có nhiều nhãn `Sign In` dù hàng Sign In hiện trong menu danh sách dưới Customer Service. Bộ chọn chung giờ ưu tiên node có thể bấm; khi nhãn vẫn lặp, dùng Customer Service đang hiện làm mốc và chỉ chọn một Sign In dưới mốc. Nếu vẫn nhiều ứng viên thì dừng để người dùng sửa và bấm Tiếp tục. Trong phiên tool cũ, có thể bấm Sign In thủ công rồi Tiếp tục từ form SĐT. **131 test mô phỏng đạt; chưa xác minh trên q1 thật.**
 
+## Chung b4a — Chạm ô SĐT
+
+Sau Sign In, chờ form nhập SĐT rồi chạm vào ô đang hiện. B5 thử chạm lại nếu Android vẫn báo ô chưa có focus. Đây là bước dùng chung và lỗi chờ form sẽ hiện ở b4a.
+
 ## Chung b5 — Gõ số điện thoại
 
 Gõ nguyên chuỗi SĐT của đúng hàng từng ký tự vào ô `Enter mobile number or email`, rồi đọc lại. Không dán clipboard. **Đã nối mã; chưa thử thật.**

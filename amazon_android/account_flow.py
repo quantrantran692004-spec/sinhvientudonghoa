@@ -49,9 +49,9 @@ def screen(nodes: list[dict[str, str]]) -> str:
     if _has(nodes, "Looks like you are new to Amazon") and _has(
             nodes, "Proceed to create an account"):
         return "NEW_ACCOUNT"
-    if _has(nodes, "Sign in or create account") and (
-            _has(nodes, PHONE_FIELD) or
-            (_has(nodes, "Continue") and len(_visible_edit_fields(nodes)) == 1)):
+    if (_has(nodes, "Sign in or create account") and _has(nodes, PHONE_FIELD)) or (
+            _has(nodes, "Continue") and len(_visible_edit_fields(nodes)) == 1 and
+            (_has(nodes, PHONE_FIELD) or _has(nodes, "Sign in or create account"))):
         return "IDENTIFIER"
     if (_has(nodes, "Shop by category") or
             (_has(nodes, "Sign In") and _has(nodes, "Customer Service"))):
@@ -220,7 +220,7 @@ def _wait_screen(phone: CloudPhone, expected: set[str],
         nodes = _read_nodes(phone, deadline, stop)
         if screen(nodes) in expected:
             return nodes
-        stop.wait(min(0.2, max(0, until - time.monotonic())))
+        stop.wait(min(0.1, max(0, until - time.monotonic())))
     raise ToolError("Amazon chưa hiện màn hình kế tiếp như ảnh hướng dẫn")
 
 
@@ -348,7 +348,7 @@ def _find_scrolling(phone: CloudPhone, label: str,
         fling = country_list and attempt == 0 and not reverse
         _scroll_up(phone, nodes, deadline, country_list=country_list,
                    fling=fling, reverse=reverse)
-        stop.wait(0.45 if fling else 0.15 if country_list else 0.35)
+        stop.wait(0.45 if fling else 0.1 if country_list else 0.2)
     raise ToolError(f"Không tìm thấy '{label}' sau khi cuộn máy này")
 
 
@@ -397,7 +397,8 @@ def _type_field(phone: CloudPhone, label: str, value: str,
         return nodes
     if current and not value.startswith(current):
         raise ToolError(f"Ô '{label}' khác dữ liệu của máy này; sửa trực tiếp rồi Tiếp tục")
-    _tap(phone, field, deadline)
+    if label != PHONE_FIELD or field.get("focused") != "true":
+        _tap(phone, field, deadline)
     if label == PHONE_FIELD and field.get("focused") == "false":
         active_field = _field(_read_nodes(phone, deadline, stop), label)
         if active_field.get("focused") == "false":
@@ -477,15 +478,19 @@ def build_common_steps(phone: CloudPhone,
                 stop: threading.Event) -> None:
         nodes = _read_nodes(phone, deadline, stop)
         if screen(nodes) == "IDENTIFIER":
-            _tap(phone, _field(nodes, PHONE_FIELD), deadline)
             return
         if _at_or_after(nodes, "NEW_ACCOUNT"):
             return
         _ensure_menu(phone, deadline, stop)
         _tap(phone, _find_scrolling(phone, "Sign In", deadline, stop,
                                     menu_action=True), deadline)
-        nodes = _wait_screen(phone, {"IDENTIFIER"}, deadline, stop)
-        _tap(phone, _field(nodes, PHONE_FIELD), deadline)
+
+    def focus_phone(job: RunJob, deadline: AttemptDeadline,
+                    stop: threading.Event) -> None:
+        nodes = _wait_screen(phone, {"IDENTIFIER", "NEW_ACCOUNT", "CREATE_FORM",
+                                    "WHATSAPP", "SMS", "COUNTRY"}, deadline, stop)
+        if screen(nodes) == "IDENTIFIER":
+            _tap(phone, _field(nodes, PHONE_FIELD), deadline)
 
     def phone_number(job: RunJob, deadline: AttemptDeadline,
                      stop: threading.Event) -> None:
@@ -627,6 +632,7 @@ def build_common_steps(phone: CloudPhone,
 
     return (
         PostMenuStep("b4 Sign In", sign_in),
+        PostMenuStep("b4a chạm ô SĐT", focus_phone),
         PostMenuStep("b5 nhập SĐT", phone_number),
         PostMenuStep("b6 chọn US +1", country),
         PostMenuStep("b7 Continue", continue_number),
