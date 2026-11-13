@@ -19,6 +19,8 @@ Menu ba gạch có thêm biến thể dạng danh sách: trên các máy đã n�
 
 ## Trạng thái kiểm chứng và giới hạn
 
+- Ảnh q1 mới báo b9 chưa xác nhận được nội dung ô tên dù tên đã hiện. Luồng chung đọc lại tối đa ba lần sau khi gõ, không gõ lặp và chỉ bấm Continue khi nội dung khớp tên của máy. Kiểm tra mô phỏng giá trị tên cập nhật trễ. Chưa xác nhận trên Swarmote thật.
+
 - Sau ảnh q1 dừng tại b4 dù form đã xuất hiện, luồng chung tách b4a chạm ô SĐT thành bước riêng giữa Sign In và gõ số. B4a chờ form, chạm ô và b5 kiểm tra lại focus trước khi gõ. Form cũng được nhận khi có nhãn SĐT, Continue và một ô nhập hiện hữu dù cây UI thiếu tiêu đề. Giảm khoảng nghỉ khi kiểm tra màn và cuộn thường. Chưa kiểm chứng trên Swarmote thật.
 
 - Luồng chung giữ quan hệ cha con trong cây UI Android. Bộ chọn nút quy các nhãn lặp về điều khiển cha có thể bấm trước khi so sánh vùng bấm. Áp dụng cho Sign In, Continue, Proceed to create an account, Send code by SMS và Create your Amazon account. Đã thêm kiểm tra với cây XML mô phỏng, chưa có ADB Swarmote để đối chiếu cây UI thật.

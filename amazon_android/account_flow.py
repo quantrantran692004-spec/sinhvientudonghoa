@@ -25,6 +25,7 @@ from .runner import RunJob
 UI_PATH = "/sdcard/amazon_tool_post_menu.xml"
 SIZE = re.compile(r"(?:Physical|Override) size:\s*(\d+)x(\d+)")
 PHONE_FIELD = "Enter mobile number or email"
+NAME_FIELD = "First and last name"
 
 
 def _text(node: dict[str, str]) -> str:
@@ -407,11 +408,15 @@ def _type_field(phone: CloudPhone, label: str, value: str,
         if active_field.get("focused") == "false":
             raise ToolError("Ô SĐT chưa nhận focus. Chạm ô trên Amazon rồi bấm Tiếp tục")
     type_characters(phone, value[len(current):], deadline, stop)
-    nodes = _read_nodes(phone, deadline, stop)
-    updated = _field(nodes, label)
-    if updated.get("text", "") != value:
-        raise ToolError(f"Chưa xác nhận được nội dung ô '{label}'")
-    return nodes
+    # Android can expose an intermediate IME value after the last keystroke.
+    attempts = 3 if label == NAME_FIELD else 1
+    for attempt in range(attempts):
+        if attempt and stop.wait(deadline.allowance(0.15)):
+            raise ToolError("Đã dừng máy này")
+        nodes = _read_nodes(phone, deadline, stop)
+        if _field(nodes, label).get("text", "") == value:
+            return nodes
+    raise ToolError(f"Chưa xác nhận được nội dung ô '{label}'")
 
 
 def _at_or_after(nodes: list[dict[str, str]], kind: str) -> bool:
@@ -555,12 +560,12 @@ def build_common_steps(phone: CloudPhone,
         if screen(nodes) != "CREATE_FORM" or job.account is None:
             raise ToolError("Máy này chưa ở form nhập tên")
         _check_summary(nodes, job)
-        nodes = _type_field(phone, "First and last name", job.account.full_name,
+        nodes = _type_field(phone, NAME_FIELD, job.account.full_name,
                             deadline, stop, nodes=nodes)
         if screen(nodes) != "CREATE_FORM":
             raise ToolError("Amazon không còn ở form nhập tên")
         _tap(phone, _button(nodes, "Continue",
-                            below=_field(nodes, "First and last name")), deadline)
+                            below=_field(nodes, NAME_FIELD)), deadline)
         _wait_screen(phone, {"WHATSAPP", "SMS"}, deadline, stop)
 
     def send_sms(job: RunJob, deadline: AttemptDeadline,

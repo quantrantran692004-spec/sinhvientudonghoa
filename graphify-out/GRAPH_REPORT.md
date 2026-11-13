@@ -1,40 +1,41 @@
 # Graph Report - sinhvien  (2026-11-13)
 
 ## Corpus Check
-- 66 files · ~49,947 words
+- 66 files · ~50,111 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 2 file(s) not represented in the graph (top: (none) 1, .pyw 1)
 
 ## Summary
-- 865 nodes · 2688 edges · 43 communities (35 shown, 8 thin omitted)
-- Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 341 edges (avg confidence: 0.9)
+- 866 nodes · 2692 edges · 45 communities (37 shown, 8 thin omitted)
+- Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 342 edges (avg confidence: 0.9)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `868c8992`
+- Built from commit: `d0bb0b9c`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - core.py
+- build_common_steps
 - ToolError
-- settings.py
 - Window
 - ToolError
 - start_profile
 - RunnerTests
-- parse_records
+- ProxyConfig
 - .test_only_confirmed_target_names_are_selected_for_one_start_command
 - PROJECT_INDEX.md
 - 002 — Gán qN duy nhất và không dùng nhầm proxy của Profile cũ
 - Danh mục từng bước đã biết — 13/11/2026
-- otp.py
+- CloudPhone
 - AccountData
 - Biên bản kiểm tra thực tế — 2026-11-12
 - amazon-android-tool
 - Ảnh hướng dẫn q1/q2 lưu cục bộ
 - BatchDraft
-- _main_window
+- RunJob
+- _read_nodes
 - ProfilesNavigationTests
 - run_batch
 - runner.py
@@ -52,21 +53,22 @@
 - Bàn giao trạng thái dự án — 13/11/2026
 - PLAN.md
 - ._label
-- open_home_menu
-- profile_status
-- validate_otp_url
-- ._apply_bulk_text
-- otp.py
+- account_flow.py
+- FakeControl
+- desktop.py
+- route_list_menu
 - Tiến độ hướng dẫn bằng ảnh — cập nhật 13/11/2026
+- 001 — Tách dữ liệu từng mẻ và đối chiếu số hàng
+- Đã có trong graph
 
 ## God Nodes (most connected - your core abstractions)
 1. `ToolError` - 177 edges
 2. `CloudPhone` - 79 edges
 3. `Window` - 64 edges
 4. `RunJob` - 45 edges
-5. `build_common_steps()` - 41 edges
-6. `main()` - 37 edges
-7. `Q1FlowTests` - 37 edges
+5. `build_common_steps()` - 42 edges
+6. `Q1FlowTests` - 38 edges
+7. `main()` - 37 edges
 8. `AttemptDeadline` - 35 edges
 9. `_read_nodes()` - 34 edges
 10. `RunnerTests` - 34 edges
@@ -86,35 +88,35 @@
 ## Import Cycles
 - None detected.
 
-## Communities (43 total, 8 thin omitted)
+## Communities (45 total, 8 thin omitted)
 
 ### Community 0 - "core.py"
-Cohesion: 0.06
-Nodes (49): BatchItem, parse_proxy_line(), prepare_five(), BulkRecord, _table_cells(), main(), parser(), report() (+41 more)
+Cohesion: 0.11
+Nodes (34): main(), parser(), report(), adb(), app_data_dir(), available_memory_mb(), avd_names(), check_play() (+26 more)
 
-### Community 1 - "ToolError"
-Cohesion: 0.06
-Nodes (62): _at_or_after(), _bounds(), build_common_steps(), continue_number(), country(), create_account(), enter_otp(), focus_phone() (+54 more)
-
-### Community 2 - "settings.py"
+### Community 1 - "build_common_steps"
 Cohesion: 0.12
-Nodes (9): _crystal_art(), main(), save(), default_path(), AppSettings, load_settings(), save_settings(), settings_path() (+1 more)
+Nodes (6): build_common_steps(), build_q1_steps(), category(), Phần riêng từng máy, node(), Q1FlowTests
+
+### Community 2 - "ToolError"
+Cohesion: 0.05
+Nodes (22): ToolError, save(), _nodes(), open_home_menu(), _tap(), extract_otp(), _NoRedirect, read_otp() (+14 more)
 
 ### Community 4 - "ToolError"
 Cohesion: 0.09
-Nodes (26): cloud_adb(), cloud_serials(), open_amazon(), foreground(), package_path(), probe(), prop(), reported_installer() (+18 more)
+Nodes (25): cloud_adb(), cloud_serials(), open_amazon(), foreground(), package_path(), probe(), prop(), reported_installer() (+17 more)
 
 ### Community 5 - "start_profile"
-Cohesion: 0.22
-Nodes (9): _descendants(), _one(), _profile_checkbox(), _select_profile_rows(), _selected_profile_names(), _set_value(), start_profile(), start_profiles_together() (+1 more)
+Cohesion: 0.15
+Nodes (16): _create_profile_form(), _descendants(), inspect(), _invoke(), _main_window(), _one(), _profile_checkbox(), _profile_form_open() (+8 more)
 
 ### Community 6 - "RunnerTests"
 Cohesion: 0.07
-Nodes (13): ProfileRegistry, absent(), ProfileRegistryTests, lookup(), RunnerTests, create(), resume(), create() (+5 more)
+Nodes (14): ProfileRegistry, absent(), ProfileRegistryTests, lookup(), broken(), RunnerTests, create(), resume() (+6 more)
 
-### Community 7 - "parse_records"
-Cohesion: 0.15
-Nodes (5): lines(), parse_column(), parse_records(), _url_from_cell(), BulkInputTests
+### Community 7 - "ProxyConfig"
+Cohesion: 0.08
+Nodes (15): BatchItem, parse_proxy_line(), prepare_five(), BulkRecord, lines(), parse_column(), parse_records(), _table_cells() (+7 more)
 
 ### Community 8 - ".test_only_confirmed_target_names_are_selected_for_one_start_command"
 Cohesion: 0.11
@@ -122,51 +124,51 @@ Nodes (6): BatchStartTests, checkbox(), toggle(), descendants(), FakeBox, FakeBu
 
 ### Community 10 - "002 — Gán qN duy nhất và không dùng nhầm proxy của Profile cũ"
 Cohesion: 0.06
-Nodes (26): 002 — Gán qN duy nhất và không dùng nhầm proxy của Profile cũ, Kiểm tra bắt buộc, Mục tiêu và bằng chứng, Phạm vi, Rủi ro và bảo trì, Điều kiện dừng, 003 — Một quy trình hai pha với trạng thái, dừng và tiếp tục thật, Các bước (+18 more)
+Nodes (27): 002 — Gán qN duy nhất và không dùng nhầm proxy của Profile cũ, Kiểm tra bắt buộc, Mục tiêu và bằng chứng, Phạm vi, Rủi ro và bảo trì, Thiết kế yêu cầu, Điều kiện dừng, 003 — Một quy trình hai pha với trạng thái, dừng và tiếp tục thật (+19 more)
 
 ### Community 11 - "Danh mục từng bước đã biết — 13/11/2026"
 Cohesion: 0.07
 Nodes (30): Chung b10 — Chuyển WhatsApp sang SMS, Chung b11a — Lấy và gõ OTP SMS, Chung b11b — Bấm Create your Amazon account, Chung b4 — Sign In từ menu, Chung b4a — Chạm ô SĐT, Chung b5 — Gõ số điện thoại, Chung b6 — Chọn United States +1, Chung b7 — Continue số điện thoại (+22 more)
 
-### Community 12 - "otp.py"
-Cohesion: 0.17
-Nodes (4): extract_otp(), read_otp(), wait_for_new_otp(), OtpTests
+### Community 12 - "CloudPhone"
+Cohesion: 0.14
+Nodes (10): home_visible(), resume_common_index(), verify_menu_open(), visit_home(), CloudPhone, reconcile(), AttemptDeadline, type_characters() (+2 more)
 
 ### Community 13 - "AccountData"
-Cohesion: 0.20
+Cohesion: 0.21
 Nodes (3): _automatic_resume_slots(), AccountData, DesktopResumeTests
 
 ### Community 14 - "Biên bản kiểm tra thực tế — 2026-11-12"
-Cohesion: 0.12
-Nodes (16): Biên bản kiểm tra thực tế — 2026-11-12, Giao diện sáng, dễ đọc — 2026-11-13, Hướng Swarmote theo ảnh người dùng, Luồng tạo và mở song song — 2026-11-13, Menu ba gạch dạng danh sách — 2026-11-13, Mẻ 12 máy và tên cố định — 2026-11-13, Nút Làm lại / mẻ mới — 2026-11-13, Năm ảnh lỗi q1 và sửa luồng chung — 13/11/2026 (+8 more)
+Cohesion: 0.11
+Nodes (19): Biên bản kiểm tra thực tế — 2026-11-12, Cập nhật luồng mẻ trước đó — 2026-11-13, Giao diện sáng, dễ đọc — 2026-11-13, Hướng Swarmote theo ảnh người dùng, Luồng tạo và mở song song — 2026-11-13, Menu ba gạch dạng danh sách — 2026-11-13, Mẻ 12 máy và tên cố định — 2026-11-13, Nút Làm lại / mẻ mới — 2026-11-13 (+11 more)
 
 ### Community 16 - "Ảnh hướng dẫn q1/q2 lưu cục bộ"
 Cohesion: 0.10
 Nodes (20): Menu chung ảnh 01 — Danh sách chữ, q1 ảnh 01 — Menu và ba thẻ, q1 ảnh 02 — Sign In cuối menu, q1 ảnh 03 — Nhập số điện thoại, q1 ảnh 04 — Chọn mã quốc gia, q1 ảnh 05 — Continue số điện thoại, q1 ảnh 06 — Tạo tài khoản mới, q1 ảnh 07 — Form tên (+12 more)
 
-### Community 17 - "BatchDraft"
-Cohesion: 0.15
-Nodes (9): BatchDraft, 001 — Tách dữ liệu từng mẻ và đối chiếu số hàng, Kiểm tra bắt buộc, Mục tiêu và bằng chứng, Phạm vi, Rủi ro và bảo trì, Thiết kế yêu cầu, Điều kiện dừng (+1 more)
+### Community 18 - "RunJob"
+Cohesion: 0.16
+Nodes (6): attempt_seconds(), PostMenuSession, PostMenuStep, RunJob, PostMenuTests, first_step()
 
-### Community 18 - "_main_window"
-Cohesion: 0.33
-Nodes (3): inspect(), _main_window(), _swarmote_exe()
+### Community 19 - "_read_nodes"
+Cohesion: 0.24
+Nodes (25): _at_or_after(), continue_number(), country(), create_account(), enter_otp(), focus_phone(), name(), phone_number() (+17 more)
 
 ### Community 20 - "ProfilesNavigationTests"
-Cohesion: 0.18
-Nodes (6): _open_profiles(), visible_profile_names(), control(), ProfilesNavigationTests, descendants(), descendants()
+Cohesion: 0.16
+Nodes (7): _open_profiles(), ProfileCreateNotSubmitted, visible_profile_names(), control(), ProfilesNavigationTests, descendants(), descendants()
 
 ### Community 21 - "run_batch"
-Cohesion: 0.27
-Nodes (6): emit(), _prepare_phone(), run_batch(), fill_slots(), refresh_slots(), Các bước
+Cohesion: 0.16
+Nodes (10): emit(), _prepare_phone(), run_batch(), fill_slots(), refresh_slots(), visible_lookup(), _profile_row_status(), profile_status() (+2 more)
 
 ### Community 22 - "runner.py"
-Cohesion: 0.13
-Nodes (12): _activate_manager(), _create_profile_form(), _invoke(), _profile_form_open(), ProfileCreateNotSubmitted, ProfileManagerWindowError, ProfileNotFound, ProxyTestFailed (+4 more)
+Cohesion: 0.22
+Nodes (3): ProfileManagerWindowError, ProxyTestFailed, unavailable()
 
 ### Community 23 - "time"
-Cohesion: 0.15
-Nodes (8): ready_for_home_menu(), install_amazon(), open_adb_shell(), _phone_window(), show_apps(), _wait_for(), FakeControl, InstallTests
+Cohesion: 0.25
+Nodes (6): ready_for_home_menu(), install_amazon(), open_adb_shell(), _phone_window(), show_apps(), _wait_for()
 
 ### Community 24 - "Danh mục ảnh nằm trong dự án"
 Cohesion: 0.29
@@ -212,21 +214,29 @@ Nodes (6): Bằng chứng và phạm vi, Kiểm chứng, Điều hướng hai d�
 Cohesion: 0.67
 Nodes (3): Bàn giao trạng thái dự án — 13/11/2026, Mục tiêu và quy tắc đã chốt, Tài liệu chi tiết
 
-### Community 37 - "open_home_menu"
-Cohesion: 0.24
-Nodes (6): _nodes(), open_home_menu(), _tap(), HomeMenuTests, Cập nhật luồng mẻ trước đó — 2026-11-13, q14 mở Amazon lần đầu — 2026-11-13
-
-### Community 38 - "profile_status"
+### Community 37 - "account_flow.py"
 Cohesion: 0.22
-Nodes (7): visible_lookup(), _profile_row_status(), profile_status(), ProfileLookupError, Thiết kế yêu cầu, broken(), Nút New Profile trên Swarmote — 13/11/2026
+Nodes (12): _bounds(), _button(), _find_scrolling(), _national_phone(), _parse_ui_nodes(), _RegistrationState, _scroll_up(), _text() (+4 more)
 
-### Community 39 - "validate_otp_url"
-Cohesion: 0.29
-Nodes (3): validate_card(), otp_token(), validate_otp_url()
+### Community 39 - "desktop.py"
+Cohesion: 0.12
+Nodes (5): validate_card(), _crystal_art(), main(), otp_token(), validate_otp_url()
+
+### Community 41 - "route_list_menu"
+Cohesion: 0.33
+Nodes (4): menu_layout(), route_list_menu(), route(), Mã hiện có
 
 ### Community 42 - "Tiến độ hướng dẫn bằng ảnh — cập nhật 13/11/2026"
 Cohesion: 0.67
 Nodes (3): Cách xử lý ảnh tiếp theo, Phần dùng chung đã được hướng dẫn, Tiến độ hướng dẫn bằng ảnh — cập nhật 13/11/2026
+
+### Community 43 - "001 — Tách dữ liệu từng mẻ và đối chiếu số hàng"
+Cohesion: 0.29
+Nodes (7): 001 — Tách dữ liệu từng mẻ và đối chiếu số hàng, Kiểm tra bắt buộc, Mục tiêu và bằng chứng, Phạm vi, Rủi ro và bảo trì, Thiết kế yêu cầu, Điều kiện dừng
+
+### Community 44 - "Đã có trong graph"
+Cohesion: 0.40
+Nodes (3): _activate_manager(), _unfiltered_single_page(), Đã có trong graph
 
 ## Knowledge Gaps
 - **1 isolated node(s):** `amazon-android-tool`
@@ -236,17 +246,17 @@ Nodes (3): Cách xử lý ảnh tiếp theo, Phần dùng chung đã được h�
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `ToolError` connect `ToolError` to `core.py`, `ToolError`, `settings.py`, `Window`, `start_profile`, `RunnerTests`, `parse_records`, `002 — Gán qN duy nhất và không dùng nhầm proxy của Profile cũ`, `otp.py`, `AccountData`, `BatchDraft`, `_main_window`, `unittest`, `ProfilesNavigationTests`, `run_batch`, `runner.py`, `time`, `open_home_menu`, `profile_status`, `validate_otp_url`, `._apply_bulk_text`, `otp.py`?**
+- **Why does `ToolError` connect `ToolError` to `core.py`, `build_common_steps`, `Window`, `ToolError`, `start_profile`, `RunnerTests`, `ProxyConfig`, `002 — Gán qN duy nhất và không dùng nhầm proxy của Profile cũ`, `CloudPhone`, `BatchDraft`, `RunJob`, `_read_nodes`, `ProfilesNavigationTests`, `run_batch`, `runner.py`, `time`, `account_flow.py`, `desktop.py`, `._apply_bulk_text`, `Đã có trong graph`?**
   _High betweenness centrality (0.438) - this node is a cross-community bridge._
 - **Are the 26 inferred relationships involving `ToolError` (e.g. with `_visible()` and `BatchDraft`) actually correct?**
   _`ToolError` has 26 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `amazon-android-tool` to the rest of the system?**
   _1 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `core.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.0585434667607124 - nodes in this community are weakly interconnected._
-- **Why does `build_common_steps()` connect `ToolError` to `MENU_ROUTING.md`, `ToolError`, `Tiến độ hướng dẫn bằng ảnh — cập nhật 13/11/2026`, `otp.py`, `runner.py`, `Quy tắc tự động hóa sau menu ba gạch`?**
-  _High betweenness centrality (0.113) - this node is a cross-community bridge._
+  _Cohesion score 0.10855094726062468 - nodes in this community are weakly interconnected._
+- **Why does `build_common_steps()` connect `build_common_steps` to `MENU_ROUTING.md`, `ToolError`, `account_flow.py`, `route_list_menu`, `Tiến độ hướng dẫn bằng ảnh — cập nhật 13/11/2026`, `CloudPhone`, `Đã có trong graph`, `RunJob`, `_read_nodes`, `Quy tắc tự động hóa sau menu ba gạch`?**
+  _High betweenness centrality (0.114) - this node is a cross-community bridge._
 - **Are the 32 inferred relationships involving `CloudPhone` (e.g. with `build_common_steps()` and `_ensure_menu()`) actually correct?**
   _`CloudPhone` has 32 INFERRED edges - model-reasoned connections that need verification._
-- **Should `ToolError` be split into smaller, more focused modules?**
-  _Cohesion score 0.05507662835249042 - nodes in this community are weakly interconnected._
+- **Should `build_common_steps` be split into smaller, more focused modules?**
+  _Cohesion score 0.12477718360071301 - nodes in this community are weakly interconnected._

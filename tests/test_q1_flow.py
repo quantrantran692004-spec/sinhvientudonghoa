@@ -180,6 +180,24 @@ class Q1FlowTests(unittest.TestCase):
         with self.assertRaises(ToolError):
             _button([action, another_action], "Continue", below=field)
 
+    def test_b9_waits_for_name_readback_before_tapping_continue(self):
+        action = node("Continue", bounds="[35,470][345,520]")
+        heading = [node("Create account"), node("First and last name"), action]
+        field = node("", kind="android.widget.EditText", bounds="[30,210][350,250]")
+        value = self.job.account.full_name
+        snapshots = [heading + [field], heading + [dict(field, text=value[:-1])],
+                     heading + [dict(field, text=value)]]
+        b9 = next(step.action for step in build_common_steps(self.phone, lambda _: None)
+                  if step.name.startswith("b9"))
+        with patch("amazon_android.account_flow._read_nodes", side_effect=snapshots), \
+             patch("amazon_android.account_flow._check_summary"), \
+             patch("amazon_android.account_flow._wait_screen"), \
+             patch("amazon_android.account_flow._tap") as tap, \
+             patch("amazon_android.account_flow.type_characters") as typed:
+            b9(self.job, self.deadline, self.stop)
+        typed.assert_called_once()
+        self.assertEqual([call.args[1] for call in tap.call_args_list], [field, action])
+
     def test_b9_resolves_two_xml_labels_to_one_clickable_parent(self):
         xml = f'''<hierarchy>
           <node package="{AMAZON_PACKAGE}" clickable="true" bounds="[35,470][345,520]">
