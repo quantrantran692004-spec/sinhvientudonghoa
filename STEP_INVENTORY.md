@@ -34,6 +34,10 @@ Trên đúng cửa sổ máy, mở Apps/App Store, tìm `z`, cài Amazon Shoppin
 
 Mở Amazon, xử lý màn trước đăng nhập nếu có, bấm Browse menu Tab và xác nhận `Shop by category`/menu. Đây là điểm nối luồng riêng từng máy. Nếu registry đã ghi `MENU_OPEN` từ lượt trước, phải nối lại ADB serial của đúng máy trước khi phát sự kiện để chạy b1. Nếu thiếu hàng Amazon hoặc serial, báo rõ ở hàng máy; nếu Offline, nhắc Start rồi Tiếp tục. **Đã sửa mã và test mô phỏng cho q1/q2; q2 chưa xác minh lại thật sau báo cáo đứng ở menu.**
 
+## P08a — Nhận diện biến thể menu dạng danh sách
+
+Sau P08, đọc cây UI Android trực tiếp của đúng máy. Nếu menu có các thẻ danh mục như Gifting/Pets/Fashion and Beauty, giữ b1–b3 riêng của q1 hoặc q2. Nếu menu là danh sách chữ như ảnh mới (`Shop by Category`, `Books`, `Electronics`, `Home services`, `See all`, `Customer Service`, `Sign In`), bấm tab Home, **chỉ xem/chờ 2–5 giây, không cuộn**, quay lại menu và chuyển thẳng sang b4 Sign In. Thời gian này nằm trong đồng hồ lượt của máy. Nếu cấu trúc chưa xác định được hoặc thiếu nút Home/Sign In, dừng tại màn hiện tại và cho Tiếp tục; không đoán tọa độ ảnh. Nhánh này dùng chung cho các máy đã được nối sau menu; không tự bật q3–q12. **Đã nối mã và test mô phỏng; chưa thử máy thật.** Xem [MENU_ROUTING.md](MENU_ROUTING.md).
+
 ## Q1 b1 — Bấm Gifting
 
 Từ menu, tìm thẻ Gifting trong cây UI hiện tại, cuộn khi cần và bấm. Khi mở trang danh mục, quay lại menu trước bước kế. **Đã nối mã theo ảnh; chưa thử thật q1.**

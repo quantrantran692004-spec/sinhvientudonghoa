@@ -4,10 +4,11 @@ from unittest.mock import patch
 
 from amazon_android.cloud import CloudPhone
 from amazon_android.core import ToolError
-from amazon_android.post_menu import AttemptDeadline
+from amazon_android.post_menu import AttemptDeadline, PostMenuSession
 from amazon_android.account_flow import (
     _button, _find_scrolling, _national_phone, _unique,
-    build_common_steps, resume_common_index, screen,
+    build_common_steps, menu_layout, resume_common_index,
+    route_list_menu, screen,
 )
 from amazon_android.q1_flow import build_q1_steps
 from amazon_android.q2_flow import build_q2_steps
@@ -44,6 +45,69 @@ class Q1FlowTests(unittest.TestCase):
         for labels, expected in cases:
             with self.subTest(expected=expected):
                 self.assertEqual(screen([node(label) for label in labels]), expected)
+
+    def test_list_menu_uses_live_text_structure_for_all_connected_machines(self):
+        listed = [node(label) for label in (
+            "Shop by Category", "Books", "Electronics", "Home services",
+            "See all", "Customer Service", "Sign In")]
+        cards = [node(label) for label in (
+            "Shop by category", "Gifting", "Pets", "Fashion and Beauty")]
+        self.assertEqual(menu_layout(listed), "LIST")
+        self.assertEqual(menu_layout(cards), "CARDS")
+        for factory in (build_q1_steps, build_q2_steps):
+            steps = factory(self.phone, lambda _code: None)
+            session = PostMenuSession("batch", 0, "q1")
+            with patch("amazon_android.account_flow._read_nodes",
+                       return_value=listed), \
+                 patch("amazon_android.account_flow.visit_home") as home:
+                target = route_list_menu(self.phone, steps, 0, session,
+                                         self.deadline, self.stop)
+            self.assertEqual(steps[target].name, "b4 Sign In")
+            self.assertEqual(session.menu_route, "LIST")
+            home.assert_called_once()
+            with patch("amazon_android.account_flow._read_nodes",
+                       return_value=cards), \
+                 patch("amazon_android.account_flow.visit_home") as home:
+                self.assertIsNone(route_list_menu(
+                    self.phone, steps, 0, session, self.deadline, self.stop))
+            self.assertEqual(session.menu_route, "")
+            home.assert_not_called()
+
+    def test_list_route_recovers_if_home_was_already_opened(self):
+        steps = build_q2_steps(self.phone, lambda _code: None)
+        session = PostMenuSession("batch", 1, "q2")
+        session.menu_route = "LIST"
+        home_nodes = [node("Sign in for the best experience")]
+        with patch("amazon_android.account_flow._read_nodes",
+                   return_value=home_nodes), \
+             patch("amazon_android.account_flow.visit_home") as home:
+            target = route_list_menu(self.phone, steps, 0, session,
+                                     self.deadline, self.stop)
+        self.assertEqual(steps[target].name, "b4 Sign In")
+        home.assert_called_once()
+
+    def test_shared_b4_returns_from_home_to_list_menu_sign_in(self):
+        field = node("", kind="android.widget.EditText")
+        home = [node("Sign in for the best experience")]
+        listed = [node(label) for label in (
+            "Shop by Category", "Books", "Electronics", "Customer Service",
+            "Sign In")]
+        identifier = [node("Sign in or create account"),
+                      node("Enter mobile number or email"), field]
+        sign_in = build_common_steps(self.phone, lambda _code: None)[0].action
+        with patch("amazon_android.account_flow._read_nodes", return_value=home), \
+             patch("amazon_android.account_flow._ensure_menu",
+                   return_value=listed) as ensure, \
+             patch("amazon_android.account_flow._find_scrolling",
+                   return_value=listed[-1]), \
+             patch("amazon_android.account_flow._wait_screen",
+                   return_value=identifier), \
+             patch("amazon_android.account_flow._tap") as tap:
+            sign_in(self.job, self.deadline, self.stop)
+        ensure.assert_called_once()
+        self.assertEqual(tap.call_count, 2)
+        self.assertIs(tap.call_args_list[0].args[1], listed[-1])
+        self.assertIs(tap.call_args_list[1].args[1], field)
 
     def test_ambiguous_button_stops_instead_of_guessing(self):
         with self.assertRaises(ToolError):

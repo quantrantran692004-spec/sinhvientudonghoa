@@ -33,9 +33,11 @@ class Q2FlowTests(unittest.TestCase):
         home = [{"text": "Sign in for the best experience",
                  "content-desc": ""}]
         action = build_q2_steps(self.phone, lambda _code: None)[0].action
-        with patch("amazon_android.q2_flow._read_nodes", side_effect=[menu, home]), \
-             patch("amazon_android.q2_flow._tap") as tap, \
-             patch("amazon_android.q2_flow.random.choice", return_value=3):
+        with patch("amazon_android.q2_flow._read_nodes", return_value=menu), \
+             patch("amazon_android.account_flow._read_nodes",
+                   side_effect=[menu, home]), \
+             patch("amazon_android.account_flow._tap") as tap, \
+             patch("amazon_android.account_flow.random.choice", return_value=3):
             action(self.job, self.deadline, self.stop)
         tap.assert_called_once()
         self.stop.wait.assert_called_with(3)

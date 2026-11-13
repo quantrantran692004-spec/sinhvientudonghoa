@@ -16,7 +16,9 @@ from .batch_state import BatchDraft
 from .core import ToolError
 from .otp import otp_token, validate_otp_url
 from .post_menu import PostMenuSession, PostMenuStep
-from .account_flow import resume_common_index, verify_menu_open
+from .account_flow import (
+    resume_common_index, route_list_menu, verify_menu_open,
+)
 from .q1_flow import build_q1_steps
 from .q2_flow import build_q2_steps
 from .cloud import CloudPhone
@@ -1252,6 +1254,11 @@ class Window:
 
         pythoncom.CoInitialize()
         try:
+            def route(current, active_job, deadline, active_stop):
+                phone = CloudPhone(self.phone_serials[active_job.index])
+                return route_list_menu(phone, steps, current, session,
+                                       deadline, active_stop)
+
             def reconcile(current, active_job, deadline, active_stop):
                 phone = CloudPhone(self.phone_serials[job.index])
                 target = resume_common_index(phone, steps, current,
@@ -1272,7 +1279,7 @@ class Window:
             session.run(job, steps,
                         lambda index, message, state, name:
                             self.events.put((index, message, state, name)),
-                        stop, reconcile=reconcile)
+                        stop, reconcile=reconcile, route=route)
         finally:
             pythoncom.CoUninitialize()
 

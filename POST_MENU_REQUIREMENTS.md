@@ -4,6 +4,8 @@ Phạm vi mới bắt đầu **sau** khi từng máy đã xác nhận `MENU_OPEN
 
 Người dùng hướng dẫn bằng ảnh màn hình từng máy, đã có **q1 và q2**. Với mỗi ảnh, cần xác định trạng thái màn hình, phân tích nhiều cách định vị và thao tác, chọn cách có thể kiểm tra kết quả, đồng thời tính đến lỗi thường gặp. **Chỉ b1–b3 khác nhau theo máy; từ b4 Sign In tới b11 OTP SMS và bấm tạo tài khoản là cùng một luồng cho q1–q12.** Mỗi máy vẫn có SĐT, tên, thẻ, URL OTP, trạng thái gửi mã, đồng hồ và điểm dừng/tiếp tục riêng. Thẻ hiện chỉ được giữ theo hàng, chưa sử dụng trong b1–b11. q3–q12 chỉ được nối sau khi người dùng hướng dẫn b1–b3 của từng máy.
 
+Trước b1, bộ định tuyến đọc cây UI Amazon của từng máy để phân biệt menu dạng thẻ và dạng danh sách chữ. Dạng danh sách đi Home, **chỉ xem 2–5 giây**, về menu và chạy thẳng b4 Sign In; dạng thẻ chạy b1–b3 riêng. Không viết bộ thao tác riêng cho từng ảnh, không dùng tọa độ ảnh. Khi chưa phân loại được màn, dừng để người dùng sửa rồi Tiếp tục. Xem [MENU_ROUTING.md](MENU_ROUTING.md).
+
 ## Nhận diện giao diện lúc chạy
 
 - Ảnh người dùng gửi là ví dụ để xác định luồng, **không phải tọa độ cố định** cho các lần chạy. Trước mỗi thao tác, tool đọc lại cây giao diện Android của đúng ADB serial/profile và xác định màn hình hiện tại.

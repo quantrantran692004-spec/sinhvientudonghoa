@@ -65,7 +65,8 @@ def open_home_menu(phone: CloudPhone, timeout: int = 45) -> dict:
                 "Verify mobile number" in labels or
                 "Enter security code" in labels):
             raise ToolError("Amazon đang ở bước xác minh tài khoản; giữ nguyên màn hình để bạn tiếp tục")
-        if any(label.strip().rstrip(".") == "Shop by category" for label in labels):
+        if any(label.strip().rstrip(".").casefold() == "shop by category"
+               for label in labels):
             return {"stage": "HOME_MENU_OPEN", "account_input_sent": False}
         menu = [node for node in nodes
                 if node.get("content-desc", "").startswith("Browse menu Tab")]

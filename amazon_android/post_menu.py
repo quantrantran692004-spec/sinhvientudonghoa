@@ -58,6 +58,7 @@ class PostMenuStep:
 
 Reconcile = Callable[[int, RunJob, AttemptDeadline, threading.Event],
                      tuple[int, tuple[PostMenuStep, ...]] | None]
+Route = Callable[[int, RunJob, AttemptDeadline, threading.Event], int | None]
 
 
 @dataclass
@@ -69,12 +70,14 @@ class PostMenuSession:
     next_step: int = 0
     attempts: int = 0
     state: str = "READY"
+    menu_route: str = ""
     last_error: str = ""
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
     def run(self, job: RunJob, steps: tuple[PostMenuStep, ...],
             emit: Progress, stop: threading.Event,
-            reconcile: Reconcile | None = None) -> None:
+            reconcile: Reconcile | None = None,
+            route: Route | None = None) -> None:
         """Run this phone only; errors pause at the same step for manual repair."""
         if not steps:
             raise ValueError("Post-menu steps have not been supplied")
@@ -93,6 +96,28 @@ class PostMenuSession:
         emit(self.index,
              f"{self.profile_name} · lượt {self.attempts}, {deadline.seconds // 60} phút",
              "post_running", self.profile_name)
+        if route is not None:
+            try:
+                target = route(self.next_step, job, deadline, stop)
+                if target is not None:
+                    if target < self.next_step or target >= len(steps):
+                        raise ValueError("Invalid menu route")
+                    if target > self.next_step:
+                        with self._lock:
+                            self.next_step = target
+                        emit(self.index,
+                             f"Menu dạng danh sách · đã xem Trang chủ, tiếp từ {steps[target].name}",
+                             "post_running", self.profile_name)
+            except Exception as exc:
+                reason = str(exc) if isinstance(exc, ToolError) else type(exc).__name__
+                step_name = steps[self.next_step].name
+                with self._lock:
+                    self.state = "PAUSED"
+                    self.last_error = f"{step_name}: {reason}"
+                emit(self.index,
+                     f"Dừng tại {step_name}: {reason} · sửa trên máy rồi bấm Tiếp tục",
+                     "post_paused", self.profile_name)
+                return
         if was_paused and reconcile is not None:
             try:
                 resumed = reconcile(self.next_step, job, deadline, stop)

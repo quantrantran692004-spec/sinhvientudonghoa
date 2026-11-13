@@ -87,6 +87,21 @@ class PostMenuTests(unittest.TestCase):
         self.assertEqual(calls, ["b4", "b5"])
         self.assertEqual((session.state, session.next_step), ("DONE", 2))
 
+    def test_list_menu_route_skips_machine_specific_steps_and_runs_b4(self):
+        session = PostMenuSession("batch", 1, "q2")
+        called = []
+        steps = tuple(PostMenuStep(f"b{i}",
+                                   lambda *_args, number=i: called.append(number))
+                      for i in range(1, 5))
+        events = []
+        session.run(RunJob(1, "batch", None), steps,
+                    lambda *event: events.append(event), threading.Event(),
+                    route=lambda current, *_: 3 if current == 0 else None)
+        self.assertEqual(called, [4])
+        self.assertEqual((session.state, session.next_step), ("DONE", 4))
+        self.assertTrue(any("Menu dạng danh sách" in event[1]
+                            for event in events))
+
     def test_first_attempt_clock_starts_when_menu_was_confirmed(self):
         session = PostMenuSession("batch", 0, "q1",
                                   menu_opened_at=time.monotonic() - 181)

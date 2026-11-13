@@ -1,5 +1,11 @@
 # Biên bản kiểm tra thực tế — 2026-11-12
 
+## Menu ba gạch dạng danh sách — 2026-11-13
+
+- Người dùng gửi ảnh menu dạng danh sách chữ và xác nhận thao tác: bấm Home, chỉ xem 2–5 giây, quay về menu, bấm Sign In ở b4. Ảnh được lưu ở `flow_images/shared/01_list_menu.png`.
+- Đã nối bộ phân loại dùng cây UI Android hiện tại, định tuyến chung cho q1/q2: danh sách bỏ qua b1–b3 thẻ, Home 2–5 giây trong thời hạn lượt rồi b4 quay lại menu; dạng thẻ giữ luồng riêng. Tiếp tục hồi phục được nếu đã ở Home. Không dùng tọa độ ảnh.
+- PASS mô phỏng: `126/126` unittest, gồm phân loại bố cục, định tuyến q1/q2, giữ dạng thẻ, hồi phục từ Home và b4 quay về Sign In. **Chưa thử trên Swarmote thật** vì phiên kiểm tra không có ADB q1/q2; chưa xác minh biến thể UI khác hoặc màn sau Create.
+
 ## Mẻ 12 máy và tên cố định — 2026-11-13
 
 - Mẻ vừa rồi chỉ tạo q16. Registry cũ ghi q17–q27 `UNCERTAIN/CREATING` với cùng lỗi “Cần đúng một cửa sổ quản lý Swarmote; tìm thấy 2”; kiểm tra danh sách Swarmote hiện chỉ có q16. Đây là lỗi tìm cửa sổ trước bước Create, không phải 11 Profile đã tạo.

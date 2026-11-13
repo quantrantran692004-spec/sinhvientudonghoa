@@ -46,7 +46,8 @@ class HomeMenuTests(unittest.TestCase):
 
     def test_category_heading_with_or_without_period_confirms_menu(self):
         phone = CloudPhone("127.0.0.1:12345")
-        for heading in ("Shop by category", "Shop by category."):
+        for heading in ("Shop by category", "Shop by category.",
+                        "Shop by Category"):
             with self.subTest(heading=heading), patch(
                 "amazon_android.home_menu._nodes",
                 return_value=[{"text": heading, "package": "com.amazon.mShop.android.shopping"}],

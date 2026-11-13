@@ -6,6 +6,7 @@ raise ToolError so the phone stays where it is for a manual fix.
 from __future__ import annotations
 
 import math
+import random
 import re
 import threading
 import time
@@ -16,7 +17,7 @@ from typing import Callable
 from .cloud import CloudPhone, cloud_adb
 from .core import AMAZON_PACKAGE, ToolError
 from .otp import wait_for_new_otp
-from .post_menu import AttemptDeadline, PostMenuStep, type_characters
+from .post_menu import AttemptDeadline, PostMenuSession, PostMenuStep, type_characters
 from .registration import BOUNDS, _field_for_label
 from .runner import RunJob
 
@@ -54,6 +55,31 @@ def screen(nodes: list[dict[str, str]]) -> str:
             (_has(nodes, "Sign In") and _has(nodes, "Customer Service"))):
         return "MENU"
     return "UNKNOWN"
+
+
+def menu_layout(nodes: list[dict[str, str]]) -> str:
+    """Classify a live Browse menu by its accessible content, not an image."""
+    if screen(nodes) != "MENU":
+        return "OTHER"
+    labels = {_text(node) for node in nodes}
+    cards = {"gifting", "pets", "fashion and beauty", "your stuff",
+             "sports & outdoors", "books and reading", "office & professional"}
+    list_items = {"books", "electronics", "home services", "see all",
+                  "today's deals", "try prime"}
+    if cards & labels:
+        return "CARDS"
+    if ({"sign in", "customer service"} <= labels and
+            len(list_items & labels) >= 2):
+        return "LIST"
+    return "UNKNOWN"
+
+
+def home_visible(nodes: list[dict[str, str]]) -> bool:
+    if screen(nodes) == "MENU":
+        return False
+    return (_has(nodes, "Sign in for the best experience") or
+            any(node.get("content-desc", "").startswith("Home Tab")
+                and node.get("selected") == "true" for node in nodes))
 
 
 def _read_nodes(phone: CloudPhone, deadline: AttemptDeadline,
@@ -154,6 +180,49 @@ def _wait_screen(phone: CloudPhone, expected: set[str],
             return nodes
         stop.wait(min(0.4, max(0, until - time.monotonic())))
     raise ToolError("Amazon chưa hiện màn hình kế tiếp như ảnh hướng dẫn")
+
+
+def visit_home(phone: CloudPhone, deadline: AttemptDeadline,
+               stop: threading.Event) -> None:
+    """Open Home by its accessible tab and view it for 2–5 seconds."""
+    nodes = _read_nodes(phone, deadline, stop)
+    if not home_visible(nodes):
+        if screen(nodes) != "MENU":
+            raise ToolError("Amazon chưa ở menu để mở Trang chủ")
+        home = _unique([node for node in nodes if _visible(node)],
+                       "Home Tab", starts=True)
+        _tap(phone, home, deadline)
+        until = time.monotonic() + deadline.allowance(6)
+        while time.monotonic() < until:
+            if home_visible(_read_nodes(phone, deadline, stop)):
+                break
+            stop.wait(min(0.3, max(0, until - time.monotonic())))
+        else:
+            raise ToolError("Amazon chưa xác nhận Trang chủ sau khi bấm biểu tượng nhà")
+    stop.wait(deadline.allowance(random.choice((2, 3, 4, 5))))
+    deadline.remaining()
+
+
+def route_list_menu(phone: CloudPhone, steps: tuple[PostMenuStep, ...],
+                    current: int, session: PostMenuSession,
+                    deadline: AttemptDeadline,
+                    stop: threading.Event) -> int | None:
+    """On a list menu, visit Home once and continue at shared b4."""
+    matches = [index for index, step in enumerate(steps)
+               if step.name == "b4 Sign In"]
+    if len(matches) != 1 or current >= matches[0]:
+        return None
+    nodes = _read_nodes(phone, deadline, stop)
+    layout = menu_layout(nodes)
+    if layout == "LIST":
+        session.menu_route = "LIST"
+    elif layout == "CARDS":
+        session.menu_route = ""
+    if session.menu_route != "LIST" or screen(nodes) in {
+            "IDENTIFIER", "NEW_ACCOUNT", "CREATE_FORM", "WHATSAPP", "SMS"}:
+        return None
+    visit_home(phone, deadline, stop)
+    return matches[0]
 
 
 def _scroll_up(phone: CloudPhone, nodes: list[dict[str, str]],

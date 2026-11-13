@@ -6,6 +6,8 @@ q1 cần ở trạng thái Running và Amazon đang hiện menu ba gạch. Dán 
 
 Nguồn: chín ảnh người dùng gửi, đánh dấu b1–b11. Ảnh là ví dụ màn hình; khi chạy phải đọc cây UI Android của đúng ADB serial, xác nhận màn hình trước/sau mỗi thao tác và dùng thời hạn còn lại của q1. Ảnh b6 có tiêu đề cửa sổ `q6`, nên dropdown quốc gia trong ảnh chỉ là ví dụ cho q1 cho tới khi được kiểm tra trên q1 thật.
 
+Nếu menu ba gạch của q1 hiện **dạng danh sách** như [ảnh mới](flow_images/shared/01_list_menu.png), tool dùng bộ phân loại chung: bấm Home, chỉ xem 2–5 giây, trở lại menu rồi bấm Sign In tại b4. Nhánh này thay b1–b3 dạng thẻ cho lượt đó; xem [MENU_ROUTING.md](MENU_ROUTING.md). Chưa thử nhánh mới trên q1 thật.
+
 Mã hiện nhận diện bằng chữ hoặc `content-desc` và lấy vùng bấm từ cây UI hiện tại; ô nhập có thêm cách ghép với nhãn gần nó hoặc dùng ô duy nhất trên màn. `resource-id` cụ thể chưa biết vì chưa thu được bản dump UI q1; sẽ bổ sung sau khi đọc được cây UI trên q1 thật. Màn lạ hoặc nhiều phần tử cùng khớp làm q1 dừng, không dùng tọa độ ảnh để đoán.
 
 | Mốc | Màn hình và mục tiêu | Cách nhận diện ưu tiên | Biến thể / điều kiện dừng |

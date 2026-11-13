@@ -4,6 +4,8 @@
 
 ## Phần dùng chung đã được hướng dẫn
 
+Menu ba gạch có hai bố cục đã biết. Với menu dạng thẻ, q1/q2 chạy b1–b3 riêng. Với menu dạng danh sách, sau khi nhận diện qua cây UI Android, tool bấm Home, chỉ xem 2–5 giây, trở lại menu và tiếp tục b4 Sign In; quy tắc này dùng cho mọi máy đã được nối sau menu. Xem [MENU_ROUTING.md](MENU_ROUTING.md). Chưa thử nhánh mới trên máy thật.
+
 Từ **b4 Sign In** ở menu ba gạch: nhập số của đúng hàng, chọn `United States +1`, Continue, xác nhận tài khoản mới, nhập tên, chọn **Send code by SMS** thay WhatsApp, lấy OTP mới từ URL riêng của hàng, gõ từng số vào form SMS rồi bấm **Create your Amazon account**. Ảnh cuối dừng ở màn nhập OTP SMS và nút Create; **chưa có ảnh màn sau khi bấm Create**, chưa biết điều kiện xác nhận tài khoản đã tạo thành công. Mật khẩu và thẻ có trong hàng dữ liệu nhưng ảnh hiện tại chưa có màn cần nhập chúng. Luồng chung được mã hóa tại `build_common_steps` trong `amazon_android/account_flow.py` và được gọi riêng cho từng máy.
 
 ## Phần riêng từng máy
@@ -21,4 +23,4 @@ Từ **b4 Sign In** ở menu ba gạch: nhập số của đúng hàng, chọn `
 3. Cập nhật `Q1_FLOW.md` hoặc `Q2_FLOW.md` (hay tạo file Qn mới), `PROJECT_HANDOFF.md`, test cần thiết, rồi chạy `python -m graphify update .` và `python -m graphify tree`.
 4. Báo riêng kết quả test mô phỏng và kết quả máy thật. Không dùng “đã tạo tài khoản thành công” khi chỉ thấy bấm Create hoặc rời màn OTP.
 
-Mười sáu ảnh q1/q2 đã được lưu và ánh xạ tới bước trong [IMAGE_EVIDENCE.md](IMAGE_EVIDENCE.md). Graphify hiện chỉ lập chỉ mục tiêu đề/link, không trích xuất pixel; phải mở ảnh khi phân tích chi tiết. File này vẫn chỉ ghi **nội dung đã được người dùng hướng dẫn**, không khẳng định ảnh đã đủ toàn bộ quy trình.
+Mười sáu ảnh q1/q2 và một ảnh menu chung đã được lưu và ánh xạ tới bước trong [IMAGE_EVIDENCE.md](IMAGE_EVIDENCE.md). Graphify hiện chỉ lập chỉ mục tiêu đề/link, không trích xuất pixel; phải mở ảnh khi phân tích chi tiết. File này vẫn chỉ ghi **nội dung đã được người dùng hướng dẫn**, không khẳng định ảnh đã đủ toàn bộ quy trình.

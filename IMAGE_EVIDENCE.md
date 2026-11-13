@@ -1,4 +1,4 @@
-# Ảnh hướng dẫn q1/q2 lưu cục bộ
+# Ảnh hướng dẫn q1/q2 và menu chung lưu cục bộ
 
 Các ảnh người dùng gửi đã được sao chép vào `flow_images/` để phiên sau xem lại pixel. Ảnh được lưu cùng mã nguồn theo yêu cầu bàn giao đầy đủ; repository GitHub hiện là **công khai** và ảnh có thể hiển thị SĐT hoặc OTP đã xuất hiện trong ảnh gốc. Không chép lại các giá trị này sang log hoặc tài liệu. Graphify chỉ lập chỉ mục các tiêu đề và liên kết dưới đây, **không đọc nội dung pixel**.
 
@@ -65,5 +65,9 @@ Các ảnh người dùng gửi đã được sao chép vào `flow_images/` đ�
 ## q2 ảnh 02 — Menu và Pets
 
 [02_menu_pets.png](flow_images/q2/02_menu_pets.png): b2 menu ba gạch, b3 Pets.
+
+## Menu chung ảnh 01 — Danh sách chữ
+
+[01_list_menu.png](flow_images/shared/01_list_menu.png): biến thể menu ba gạch gồm `Shop by Category`, các hàng danh mục và `Sign In`. Người dùng yêu cầu bấm Home, chỉ xem 2–5 giây, quay về menu rồi làm b4 Sign In. Bộ phân loại xử lý theo cây UI đang hiển thị, không phụ thuộc ảnh này; xem [MENU_ROUTING.md](MENU_ROUTING.md).
 
 Ảnh tiếp theo của người dùng chưa có trong danh mục này. Khi nhận ảnh mới, lưu tên theo máy và thứ tự, cập nhật `STEP_INVENTORY.md`, file Qn tương ứng, `PROJECT_HANDOFF.md` rồi cập nhật Graphify.
