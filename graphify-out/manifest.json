@@ -42,9 +42,9 @@
     "semantic_hash": "cf72972d3982e154acde9b3ebdcdf728"
   },
   "amazon_android/desktop.py": {
-    "mtime": 1794563028.9550636,
-    "seen": 1794563100.5484555,
-    "ast_hash": "42f11012170ebf947565c4fd03d2d915",
+    "mtime": 1794564159.2587774,
+    "seen": 1794564173.2061148,
+    "ast_hash": "7dc8ccec92f8a86752517af4adf099d3",
     "semantic_hash": ""
   },
   "amazon_android/home_menu.py": {
@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "amazon_android/otp.py": {
-    "mtime": 1794563083.3864803,
-    "seen": 1794563100.5484555,
-    "ast_hash": "467d0907df03c5c2798e701f8c914b0f",
+    "mtime": 1794564158.8887746,
+    "seen": 1794564173.2061148,
+    "ast_hash": "d17adbfea8c61fa8ee33753be80f06e5",
     "semantic_hash": ""
   },
   "amazon_android/post_menu.py": {
@@ -156,9 +156,9 @@
     "semantic_hash": ""
   },
   "tests/test_otp.py": {
-    "mtime": 1794563054.730023,
-    "seen": 1794563100.5484555,
-    "ast_hash": "9064535329035784b351b661ce4724f0",
+    "mtime": 1794564159.5401454,
+    "seen": 1794564173.2061148,
+    "ast_hash": "ccc0f53556b20304a4a83935e41e76c7",
     "semantic_hash": ""
   },
   "tests/test_post_menu.py": {
@@ -234,9 +234,9 @@
     "semantic_hash": ""
   },
   "OTP_DESIGN.md": {
-    "mtime": 1794563054.7309802,
-    "seen": 1794563100.5484555,
-    "ast_hash": "a870882fa8be6091bc0478ebf431090a",
+    "mtime": 1794564160.0288558,
+    "seen": 1794564173.2061148,
+    "ast_hash": "cf0992211066a85f3f23c4f5edc6743b",
     "semantic_hash": ""
   },
   "PLAN.md": {
@@ -258,9 +258,9 @@
     "semantic_hash": ""
   },
   "PROJECT_HANDOFF.md": {
-    "mtime": 1794563975.1559176,
-    "seen": 1794563983.3629124,
-    "ast_hash": "98fc873642233f4f26063b43cfd5367d",
+    "mtime": 1794564159.774146,
+    "seen": 1794564173.2061148,
+    "ast_hash": "7934ded5b0d79bfe256b6c3925ece801",
     "semantic_hash": ""
   },
   "Q1_FLOW.md": {

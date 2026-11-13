@@ -82,41 +82,57 @@ def read_otp(url: str, *, timeout: float = 5) -> str | None:
 def _read_otp_in_browser(url: str, previous_code: str | None, *,
                          deadline: float, interval: float,
                          stop: threading.Event, not_before: float = 0) -> str:
-    prefix = "Không đọc được OTP bằng trình duyệt ẩn. "
+    prefix = "Không đọc được OTP bằng trình duyệt. "
     try:
         from playwright.sync_api import Error, sync_playwright
     except ImportError:
         raise ToolError(prefix + "Thiếu Playwright. Chạy python -m pip install -e .") from None
 
-    def timeout_ms() -> int:
-        remaining = deadline - time.monotonic()
-        if stop.is_set() or remaining <= 0:
-            raise ToolError(prefix + "Đã dừng hoặc hết thời gian đọc bằng trình duyệt")
+    def timeout_ms(until: float) -> int:
+        remaining = until - time.monotonic()
         return max(1, int(min(remaining, 8) * 1000))
 
+    # Leave part of the same OTP deadline for a visible Chrome window.
+    hidden_until = deadline - min(12, (deadline - time.monotonic()) * 0.4)
     try:
         with sync_playwright() as playwright:
-            for channel in ("chrome", "msedge"):
+            for channel, headless, until in (("chrome", True, hidden_until),
+                                             ("msedge", True, hidden_until),
+                                             ("chrome", False, deadline)):
+                if stop.is_set():
+                    break
+                if time.monotonic() >= until:
+                    continue
                 try:
-                    browser = playwright.chromium.launch(channel=channel, headless=True,
-                                                         timeout=timeout_ms())
+                    browser = playwright.chromium.launch(channel=channel, headless=headless,
+                                                         timeout=timeout_ms(until))
                 except Error:
                     continue
                 try:
                     page = browser.new_page()
-                    delay = min(not_before, deadline) - time.monotonic()
+                    delay = min(not_before, until) - time.monotonic()
                     if delay > 0 and stop.wait(delay):
                         raise ToolError("Đã dừng chờ OTP")
-                    while not stop.is_set():
-                        response = page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms())
-                        if (page.url != url or response is None or not response.ok or
-                                response.headers.get("cf-mitigated") == "challenge"):
-                            break
-                        body = page.locator("body").inner_text(timeout=timeout_ms())
-                        code = extract_otp(body)
-                        if code is not None and code != previous_code:
-                            return code
-                        remaining = deadline - time.monotonic()
+                    reload_page = True
+                    while not stop.is_set() and time.monotonic() < until:
+                        if reload_page:
+                            response = page.goto(url, wait_until="domcontentloaded",
+                                                 timeout=timeout_ms(until))
+                            if page.url != url or response is None:
+                                break
+                            challenge = response.headers.get("cf-mitigated") == "challenge"
+                            if challenge or not response.ok:
+                                if headless:
+                                    break
+                                reload_page = False  # Let the user complete any prompt.
+                        if page.url == url:
+                            body = page.locator("body").inner_text(timeout=timeout_ms(until))
+                            code = extract_otp(body)
+                            if code is not None and code != previous_code:
+                                return code
+                            if body.lstrip().lower().startswith("no|"):
+                                reload_page = True
+                        remaining = until - time.monotonic()
                         if remaining <= 0 or stop.wait(min(interval, remaining)):
                             break
                 except Error:
@@ -126,8 +142,9 @@ def _read_otp_in_browser(url: str, previous_code: str | None, *,
                 if stop.is_set() or time.monotonic() >= deadline:
                     break
     except (Error, OSError):
-        raise ToolError(prefix + "Không đọc được bằng trình duyệt ẩn. "
-                        "Bấm Tiếp tục để mở trình duyệt thường") from None
+        raise ToolError(prefix + "Bấm Tiếp tục để mở URL và nhập mã thủ công") from None
+    if stop.is_set():
+        raise ToolError("Đã dừng chờ OTP")
     raise ToolError(prefix + "Kiểm tra Chrome hoặc Edge, hoặc bấm Tiếp tục để mở trình duyệt thường")
 
 

@@ -70,6 +70,29 @@ class OtpTests(unittest.TestCase):
         chrome.close.assert_called_once()
         edge.close.assert_called_once()
 
+    def test_opens_visible_chrome_after_hidden_browsers_fail_and_closes_it(self):
+        url = "https://apifc.net/smsrecord?token=test"
+        chrome, edge, visible = MagicMock(), MagicMock(), MagicMock()
+        for browser in (chrome, edge, visible):
+            page = browser.new_page.return_value
+            page.url = url
+            response = page.goto.return_value
+            response.ok = False
+            response.headers = {"cf-mitigated": "challenge"}
+        page = visible.new_page.return_value
+        page.locator.return_value.inner_text.side_effect = [
+            "Checking your browser", "yes|Amazon: 123456 is your sign-in code."]
+        with patch("playwright.sync_api.sync_playwright") as start:
+            launch = start.return_value.__enter__.return_value.chromium.launch
+            launch.side_effect = [chrome, edge, visible]
+            self.assertEqual(wait_for_new_otp(url, None, interval=0.001), "123456")
+        self.assertEqual([(call.kwargs["channel"], call.kwargs["headless"])
+                          for call in launch.call_args_list],
+                         [("chrome", True), ("msedge", True), ("chrome", False)])
+        page.goto.assert_called_once()  # Do not reload while a challenge is visible.
+        for browser in (chrome, edge, visible):
+            browser.close.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()
