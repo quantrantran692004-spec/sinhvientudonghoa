@@ -1140,7 +1140,7 @@ class Window:
         if session is not None:
             if session.state == "PAUSED":
                 if (session.last_error.startswith("b11 nhập OTP:") and
-                        "HTTP 403" in session.last_error):
+                        "Không đọc được OTP bằng trình duyệt ẩn" in session.last_error):
                     if not self._read_browser_otp(index):
                         return
                 self._start_post_menu(index)
@@ -1153,7 +1153,7 @@ class Window:
             return False
         choice = messagebox.askyesnocancel(
             f"Máy {index + 1} · OTP SMS",
-            "URL OTP trả HTTP 403 khi tool đọc trực tiếp.\n\n"
+            "Tool chưa đọc được URL OTP bằng trình duyệt ẩn.\n\n"
             "Yes: mở URL của máy này và dán phản hồi SMS vào tool.\n"
             "No: tiếp tục trên Amazon hoặc thử đọc URL lại.\n"
             "Cancel: giữ máy ở bước hiện tại.", parent=self.root)

@@ -11,13 +11,17 @@ Menu ba gạch có thêm biến thể dạng danh sách: trên các máy đã n�
 ## Mã hiện có
 
 - `amazon_android/bulk_input.py`, `batch_state.py`, `desktop.py`, `runner.py`: ánh xạ hàng, dữ liệu thẻ/OTP, UI 12 máy; khi gắn q1, 12 hàng vẫn hiện.
-- `amazon_android/otp.py`: xác thực URL APIFC, tách đúng 6 số từ phản hồi Amazon và đọc sau khi gửi SMS; HTTP 403 tạm thời được thử lại trong thời hạn chờ. APIFC không cung cấp dấu thời gian để chứng minh mã là mới khi URL đã có mã cũ.
+- `amazon_android/otp.py`: xác thực URL APIFC, tách đúng 6 số từ phản hồi Amazon và đọc sau khi gửi SMS; Chrome và Edge ẩn dùng để đọc OTP. APIFC không cung cấp dấu thời gian để chứng minh mã là mới khi URL đã có mã cũ.
 - `amazon_android/post_menu.py`: phiên riêng từng máy, thời hạn, dừng/tiếp tục cùng bước, gõ từng ký tự.
 - `amazon_android/account_flow.py`: nhận diện UI Android, phân loại menu dạng thẻ/danh sách, dùng `route_list_menu` và `visit_home`, cùng `build_common_steps` cho b4–b11. `amazon_android/q1_flow.py`: b1 Gifting, b2 Pets, b3 Fashion and Beauty. `amazon_android/q2_flow.py`: b1 tab Home và xem 2–5 giây, b2 tab Browse menu, b3 Pets. `amazon_android/post_menu.py` chuyển thẳng tới b4 khi menu dạng danh sách. `amazon_android/desktop.py` gắn profile từ menu theo máy được chọn. Không dùng tọa độ ảnh. q1 và q2 được nối; q3–q12 dừng ở menu.
 - `amazon_android/swarmote_desktop.py`: khi tạo profile, kiểm tra tên trùng; nếu tên vắng trên danh sách một trang thì không gõ vào ô lọc. Đưa cửa sổ quản lý lên trước để bấm New Profile, xác nhận form trước khi điền, sau đó Test Proxy và Create.
 - `Launch Swarmote Tool.pyw` gọi `amazon_android/launcher.py` để mở desktop. Graphify không phân tích trực tiếp `.pyw`; xem [SOURCE_INDEX.md](SOURCE_INDEX.md) cho các file bị bỏ qua.
 
 ## Trạng thái kiểm chứng và giới hạn
+
+- Trình duyệt có thể khởi động trong lúc chờ SMS. Chỉ điều hướng tới URL của máy khi đủ 4 giây từ lúc bấm gửi và màn SMS đã được nhận diện. Chrome ẩn là mặc định, Edge ẩn dự phòng khi Chrome không mở hoặc không đọc được trang.
+
+- B11 mặc định đọc OTP qua Chrome ẩn và thử Edge ẩn nếu Chrome không mở hoặc không đọc được trang. Máy đích cần cài Chrome hoặc Edge và Playwright qua dependencies. Đã chạy trình duyệt ẩn thật với máy chủ thử nghiệm cục bộ, nhận phản hồi chờ rồi tải lại và tách được 6 số. Chưa xác nhận với URL APIFC của lượt SMS thật. Nếu trình duyệt ẩn không đọc được, dùng phương án mở trình duyệt thường tại Tiếp tục.
 
 - Ở b11, người dùng xác nhận cùng URL có SMS đúng mẫu trong trình duyệt khi tool báo HTTP 403. Bấm Tiếp tục ở máy lỗi để mở URL đúng hàng và dán phản hồi SMS hoặc 6 số vào tool. Tool xác nhận lại số điện thoại trên màn SMS trước khi điền. OTP chỉ giữ trong bộ nhớ. Bộ đọc phân biệt phản hồi có header `cf-mitigated: challenge` với HTTP 403 thông thường. Chưa xác định nguyên nhân 403 trên máy người dùng hoặc kiểm chứng tự đọc URL thật.
 

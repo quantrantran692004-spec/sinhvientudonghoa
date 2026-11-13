@@ -1,7 +1,6 @@
-import threading
 import unittest
 from io import BytesIO
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from amazon_android.core import ToolError
 from amazon_android.otp import extract_otp, read_otp, validate_otp_url, wait_for_new_otp
@@ -42,37 +41,34 @@ class OtpTests(unittest.TestCase):
                 read_otp(url)
         self.assertNotIn("secret", str(caught.exception))
 
-    def test_waits_for_new_code_and_keeps_profiles_separate(self):
-        url_a = "https://apifc.net/smsrecord?token=one"
-        url_b = "https://apifc.net/smsrecord?token=two"
-        replies = {url_a: iter(["111111", "333333"]),
-                   url_b: iter(["222222", "444444"])}
-        lock = threading.Lock()
-
-        def next_code(url, *, timeout):
-            with lock:
-                return next(replies[url])
-
-        result = {}
-        with patch("amazon_android.otp.read_otp", side_effect=next_code):
-            threads = [
-                threading.Thread(target=lambda: result.update(a=wait_for_new_otp(
-                    url_a, "111111", timeout=2, interval=0.001))),
-                threading.Thread(target=lambda: result.update(b=wait_for_new_otp(
-                    url_b, "222222", timeout=2, interval=0.001))),
-            ]
-            for thread in threads:
-                thread.start()
-            for thread in threads:
-                thread.join()
-        self.assertEqual(result, {"a": "333333", "b": "444444"})
-
-    def test_retries_temporary_http_403_after_sms_send(self):
+    def test_uses_browser_without_direct_http_request(self):
         url = "https://apifc.net/smsrecord?token=test"
-        with patch("amazon_android.otp.read_otp",
-                   side_effect=[ToolError("URL OTP trả HTTP 403"), "123456"]):
-            self.assertEqual(wait_for_new_otp(url, None, timeout=2,
-                                              interval=0.001), "123456")
+        with patch("amazon_android.otp.read_otp") as direct, \
+             patch("amazon_android.otp._read_otp_in_browser", return_value="123456") as browser:
+            self.assertEqual(wait_for_new_otp(url, None), "123456")
+        direct.assert_not_called()
+        self.assertEqual(browser.call_args.args, (url, None))
+
+    def test_tries_edge_after_chrome_receives_a_blocked_page(self):
+        url = "https://apifc.net/smsrecord?token=test"
+        chrome, edge = MagicMock(), MagicMock()
+        chrome.new_page.return_value.url = url
+        chrome.new_page.return_value.goto.return_value.ok = False
+        page = edge.new_page.return_value
+        page.url = url
+        page.goto.return_value.ok = True
+        page.goto.return_value.headers = {}
+        page.locator.return_value.inner_text.side_effect = [
+            "no|Waiting", "yes|Amazon: 123456 is your sign-in code."]
+        with patch("playwright.sync_api.sync_playwright") as start:
+            launch = start.return_value.__enter__.return_value.chromium.launch
+            launch.side_effect = [chrome, edge]
+            self.assertEqual(wait_for_new_otp(url, None, interval=0.001), "123456")
+        self.assertEqual([call.kwargs["channel"] for call in launch.call_args_list],
+                         ["chrome", "msedge"])
+        self.assertEqual(page.goto.call_count, 2)
+        chrome.close.assert_called_once()
+        edge.close.assert_called_once()
 
 
 if __name__ == "__main__":

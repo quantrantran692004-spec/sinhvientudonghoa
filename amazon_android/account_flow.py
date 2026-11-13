@@ -602,13 +602,10 @@ def build_common_steps(phone: CloudPhone,
         if job.account.browser_otp:
             _check_summary(nodes, job)
         try:
-            if not (state.code or job.account.browser_otp):
-                wait_before_read = 4 - (time.monotonic() - state.sms_requested_at)
-                if wait_before_read > 0 and stop.wait(deadline.allowance(wait_before_read)):
-                    raise ToolError("Đã dừng chờ OTP")
             code = state.code or job.account.browser_otp or wait_for_new_otp(
                 job.account.otp_url, None,
-                timeout=deadline.allowance(30), stop=stop)
+                timeout=deadline.allowance(30), stop=stop,
+                not_before=state.sms_requested_at + 4)
         except ToolError:
             on_status("Không đọc được mã SMS")
             raise

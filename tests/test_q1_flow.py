@@ -410,13 +410,12 @@ class Q1FlowTests(unittest.TestCase):
         with patch("amazon_android.account_flow._read_nodes", return_value=sms), \
              patch("amazon_android.account_flow.time.monotonic",
                    return_value=self.deadline.started + 2), \
-             patch.object(self.stop, "wait", return_value=False) as delay, \
              patch("amazon_android.account_flow._field", return_value={"text": ""}), \
              patch("amazon_android.account_flow.wait_for_new_otp",
                    return_value="222222") as wait, \
              patch("amazon_android.account_flow._type_field") as typed:
             enter_otp(self.job, self.deadline, self.stop)
-        delay.assert_called_once_with(3)
+        self.assertEqual(wait.call_args.kwargs["not_before"], self.deadline.started + 5)
         self.assertEqual(received, ["222222"])
         self.assertEqual(statuses, ["Đang chờ mã", "Đã nhập mã"])
         self.assertEqual(wait.call_args.args[:2],
