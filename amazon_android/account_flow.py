@@ -400,7 +400,7 @@ def resume_common_index(phone: CloudPhone, steps: tuple[PostMenuStep, ...],
 
 @dataclass
 class _RegistrationState:
-    sms_requested: bool = False
+    sms_requested_at: float | None = None
     code: str = ""
     create_pressed: bool = False
 
@@ -501,16 +501,17 @@ def build_common_steps(phone: CloudPhone,
                  stop: threading.Event) -> None:
         nodes = _read_nodes(phone, deadline, stop)
         if screen(nodes) == "SMS":
-            state.sms_requested = True
+            if state.sms_requested_at is None:
+                state.sms_requested_at = time.monotonic()
             on_status("Đang chờ mã")
             return
-        if state.sms_requested:
+        if state.sms_requested_at is not None:
             raise ToolError("Đã bấm gửi SMS nhưng chưa xác nhận màn nhập mã; kiểm tra máy này")
         if screen(nodes) != "WHATSAPP" or job.account is None:
             raise ToolError("Máy này chưa ở màn chọn gửi mã bằng SMS")
         _check_summary(nodes, job)
         _tap(phone, _unique(nodes, "Send code by SMS"), deadline)
-        state.sms_requested = True
+        state.sms_requested_at = time.monotonic()
         on_status("Đang chờ mã")
         _wait_screen(phone, {"SMS"}, deadline, stop)
 
@@ -525,9 +526,13 @@ def build_common_steps(phone: CloudPhone,
             on_otp(current)
             on_status("Đã nhập mã")
             return
-        if not state.sms_requested:
+        if state.sms_requested_at is None:
             raise ToolError("Chưa xác nhận được lần gửi SMS; sửa mã trên máy rồi Tiếp tục")
         try:
+            if not state.code:
+                wait_before_read = 4 - (time.monotonic() - state.sms_requested_at)
+                if wait_before_read > 0 and stop.wait(deadline.allowance(wait_before_read)):
+                    raise ToolError("Đã dừng chờ OTP")
             code = state.code or wait_for_new_otp(
                 job.account.otp_url, None,
                 timeout=deadline.allowance(30), stop=stop)

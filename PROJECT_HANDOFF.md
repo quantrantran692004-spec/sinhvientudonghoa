@@ -19,6 +19,8 @@ Menu ba gạch có thêm biến thể dạng danh sách: trên các máy đã n�
 
 ## Trạng thái kiểm chứng và giới hạn
 
+- Luồng SMS dùng chung đợi đủ 4 giây tính từ lúc bấm gửi rồi mới đọc URL OTP. Thời gian chuyển màn được tính vào 4 giây. Nếu người dùng đã gửi tay, tính từ lúc tool nhận ra màn SMS lần đầu. Mỗi lần thử gọi lại URL với yêu cầu kiểm tra lại bộ nhớ đệm. 133 bài kiểm tra đã qua, gồm kiểm tra thời gian chờ còn lại. Chưa xác minh với URL thật.
+
 - Báo cáo mới trên q1 cho thấy b6 cuộn chậm, b9 báo nhiều Continue và b11 nhận HTTP 403 dù Amazon đã xác nhận gửi SMS. Sửa trong `build_common_steps` cho mọi máy. B6 vuốt dài trong vùng danh sách khi nhận diện được và chỉ bấm đúng `United States +1`. B9 gộp các vùng Continue lồng nhau và dùng lại cây UI đã xác nhận ô tên. Giảm khoảng chờ giữa các lần kiểm tra màn. B11 báo rõ lỗi URL OTP và vẫn cho tiếp tục từ mã nhập tay. 133 bài kiểm tra đã qua. `cloud-scan` chưa thấy ADB nên chưa đo tốc độ hay kiểm chứng cây UI thật.
 
 - 131 bài unittest đã qua, gồm nhánh menu danh sách, b4 chọn Sign In khi cây UI có nhãn lặp và dừng khi vẫn mơ hồ, b6 cuộn qua mục US ẩn và b10 bấm SMS trước mọi lần đọc URL; đồng thời các kiểm tra trước đó cho luồng chung b4–b11 và nối lại q2 từ mốc menu đã lưu. Nhánh `MENU_OPEN` nối lại ADB serial trước khi báo q2 đã tới menu; tool báo rõ nếu thiếu hàng Amazon hoặc serial. Test cửa sổ nhận 12 hàng, giữ đúng thẻ/URL theo máy và hiện nút thử q2. Đã thử trực tiếp mở form New Profile và đóng bằng Cancel, không gửi Create. Chưa thử lại trên máy thật.

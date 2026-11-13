@@ -1,7 +1,7 @@
 # Graph Report - sinhvien  (2026-11-13)
 
 ## Corpus Check
-- 66 files · ~48,937 words
+- 66 files · ~49,068 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 2 file(s) not represented in the graph (top: (none) 1, .pyw 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `db361421`
+- Built from commit: `d603a11b`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 

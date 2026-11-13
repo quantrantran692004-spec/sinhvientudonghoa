@@ -64,7 +64,9 @@ _OPENER = build_opener(_NoRedirect)
 def read_otp(url: str, *, timeout: float = 5) -> str | None:
     """GET the profile URL once and return its current code, if any."""
     url = validate_otp_url(url)
-    request = Request(url, headers={"Accept": "text/plain"})
+    request = Request(url, headers={"Accept": "text/plain",
+                                   "Cache-Control": "no-cache",
+                                   "Pragma": "no-cache"})
     try:
         with _OPENER.open(request, timeout=timeout) as response:
             payload = response.read(8193)

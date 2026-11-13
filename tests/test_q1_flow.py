@@ -330,16 +330,22 @@ class Q1FlowTests(unittest.TestCase):
                node("Create your Amazon account")]
         with patch("amazon_android.account_flow._read_nodes",
                    side_effect=[whatsapp, sms]), \
+             patch("amazon_android.account_flow.time.monotonic",
+                   return_value=self.deadline.started + 1), \
              patch("amazon_android.account_flow._check_summary"), \
              patch("amazon_android.account_flow._tap"), \
              patch("amazon_android.account_flow._wait_screen", return_value=sms):
             send_sms(self.job, self.deadline, self.stop)
         with patch("amazon_android.account_flow._read_nodes", return_value=sms), \
+             patch("amazon_android.account_flow.time.monotonic",
+                   return_value=self.deadline.started + 2), \
+             patch.object(self.stop, "wait", return_value=False) as delay, \
              patch("amazon_android.account_flow._field", return_value={"text": ""}), \
              patch("amazon_android.account_flow.wait_for_new_otp",
                    return_value="222222") as wait, \
              patch("amazon_android.account_flow._type_field") as typed:
             enter_otp(self.job, self.deadline, self.stop)
+        delay.assert_called_once_with(3)
         self.assertEqual(received, ["222222"])
         self.assertEqual(statuses, ["Đang chờ mã", "Đã nhập mã"])
         self.assertEqual(wait.call_args.args[:2],
