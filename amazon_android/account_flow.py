@@ -180,17 +180,22 @@ def _visible(node: dict[str, str]) -> bool:
     return True
 
 
+class _ActionNotResolved(ToolError):
+    pass
+
+
 def _button(nodes: list[dict[str, str]], label: str,
             *, below: dict[str, str] | None = None) -> dict[str, str]:
     """Select the visible action control, not a hidden duplicate label."""
-    matches = [node for node in nodes if _text(node) == label.casefold()
+    matches = [node for node in nodes if _has([node], label)
                and _visible(node)]
     by_id = {node["ui_id"]: node for node in nodes if "ui_id" in node}
     actions = []
     for match in matches:
         action = match
         parent = by_id.get(match.get("ui_parent", ""))
-        while parent is not None and _visible(parent) and parent.get("scrollable") != "true":
+        while (match.get("class") != "android.widget.Button" and parent is not None
+               and _visible(parent) and parent.get("scrollable") != "true"):
             if parent.get("clickable") == "true":
                 if (_text(parent) in {"", label.casefold()} and
                         parent.get("class") != "android.widget.EditText"):
@@ -229,7 +234,7 @@ def _button(nodes: list[dict[str, str]], label: str,
                 if len(aligned) == 1:
                     return aligned[0]
             break
-    raise ToolError(f"Không xác định được duy nhất nút '{label}' trên máy này")
+    raise _ActionNotResolved(f"Không xác định được duy nhất nút '{label}' trên máy này")
 
 
 def _wait_screen(phone: CloudPhone, expected: set[str],
@@ -587,8 +592,23 @@ def build_common_steps(phone: CloudPhone,
                             deadline, stop, nodes=nodes)
         if screen(nodes) != "CREATE_FORM":
             raise ToolError("Amazon không còn ở form nhập tên")
-        _tap(phone, _button(nodes, "Continue",
-                            below=_field(nodes, NAME_FIELD)), deadline)
+        try:
+            button = _button(nodes, "Continue", below=_field(nodes, NAME_FIELD))
+        except _ActionNotResolved:
+            timeout = max(1, math.ceil(min(6, deadline.remaining())))
+            ime = cloud_adb(phone, "shell", "dumpsys", "input_method", timeout=timeout)
+            if not re.search(r"\bmInputShown=true\b", ime.stdout):
+                raise
+            cloud_adb(phone, "shell", "input", "keyevent", "KEYCODE_BACK", timeout=timeout)
+            nodes = _read_nodes(phone, deadline, stop)
+            if screen(nodes) != "CREATE_FORM":
+                raise ToolError("Amazon đã rời form nhập tên sau khi đóng bàn phím")
+            _check_summary(nodes, job)
+            field = _field(nodes, NAME_FIELD)
+            if field.get("text", "") != job.account.full_name:
+                raise ToolError("Chưa xác nhận được tên sau khi đóng bàn phím")
+            button = _button(nodes, "Continue", below=field)
+        _tap(phone, button, deadline)
         _wait_screen(phone, {"WHATSAPP", "SMS"}, deadline, stop)
 
     def send_sms(job: RunJob, deadline: AttemptDeadline,

@@ -1,5 +1,6 @@
 import threading
 import unittest
+from types import SimpleNamespace
 from subprocess import TimeoutExpired
 from unittest.mock import patch
 
@@ -21,6 +22,27 @@ def node(text, *, bounds="[10,10][200,50]", kind="android.widget.TextView"):
 
 
 class Q1FlowTests(unittest.TestCase):
+    def test_b9_retries_continue_after_dismissing_visible_keyboard(self):
+        field = node(self.job.account.full_name, kind="android.widget.EditText",
+                     bounds="[30,210][350,250]")
+        form = [node("Create account"), node("First and last name"), field]
+        action = node("Continue", bounds="[35,470][345,520]")
+        duplicate = node("Continue", bounds="[35,530][345,580]")
+        b9 = next(step.action for step in build_common_steps(self.phone, lambda _: None)
+                  if step.name.startswith("b9"))
+        with patch("amazon_android.account_flow._read_nodes",
+                   side_effect=[form + [action, duplicate], form + [action]]), \
+             patch("amazon_android.account_flow._check_summary") as check, \
+             patch("amazon_android.account_flow._wait_screen"), \
+             patch("amazon_android.account_flow.cloud_adb",
+                   return_value=SimpleNamespace(stdout="mInputShown=true")) as adb, \
+             patch("amazon_android.account_flow._tap") as tap:
+            b9(self.job, self.deadline, self.stop)
+        self.assertEqual(adb.call_args.args[1:], ("shell", "input", "keyevent", "KEYCODE_BACK"))
+        self.assertEqual(check.call_count, 2)
+        self.assertEqual(tap.call_count, 1)
+        self.assertIs(tap.call_args.args[1], action)
+
     def test_b8_recognizes_create_form_with_incomplete_accessibility_labels(self):
         controls = [node("Mobile number"), node("Continue"),
                     node("", kind="android.widget.EditText")]

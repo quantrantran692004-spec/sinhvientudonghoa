@@ -19,6 +19,8 @@ Menu ba gạch có thêm biến thể dạng danh sách: trên các máy đã n�
 
 ## Trạng thái kiểm chứng và giới hạn
 
+- B9 gặp nhiều Continue khi bàn phím mở. Bộ chọn nhận cả text và content-desc, giữ node nút gốc. Nếu vẫn chưa chọn được, kiểm tra Android có bàn phím đang hiện, đóng bàn phím một lần, đọc lại form, xác nhận SĐT và tên rồi mới bấm Continue. Chưa đối chiếu cây UI của q1 thật vì không thấy ADB trong phiên kiểm tra.
+
 - Ảnh q1 mới cho thấy form tạo tài khoản đã hiện dù b8 báo chưa nhận diện được màn. Bộ nhận diện chung đọc cả `text` và `content-desc`, chấp nhận tiêu đề biến thể và dùng nhãn tên hoặc tiêu đề cùng Mobile number, Continue và một ô nhập hiện hữu. Khi b8 đọc được form đã mở, chuyển sang b9 mà không bấm lại. Mô phỏng đã kiểm tra các biến thể và trường hợp mơ hồ. Chưa đọc được cây UI q1 thật vì không thấy ADB Swarmote.
 
 - Danh sách quốc gia dài. Sau cú vuốt nhanh rồi nhả, nếu màn vẫn hiện các nước nhóm A–S, b6 tiếp tục dùng cú vuốt mạnh. Gần nhóm T/U thì cuộn có kiểm soát và cuộn ngược nếu vượt qua mục Mỹ.
