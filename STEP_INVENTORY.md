@@ -1,0 +1,111 @@
+# Danh mục từng bước đã biết — 13/11/2026
+
+Tài liệu này là bản đồ từng mốc để phiên sau không coi ảnh chưa gửi là bước đã hoàn thành. Ảnh gốc q1/q2 đã lưu và ánh xạ tại [IMAGE_EVIDENCE.md](IMAGE_EVIDENCE.md); mở ảnh đó khi cần xem UI. `Đã nối mã` khác với `đã chạy thật`. Các bước được ghi từ hướng dẫn người dùng và mã hiện tại; không suy ra màn chưa có ảnh. Dữ liệu nhạy cảm không ghi vào file này.
+
+## P01 — Dán và gán hàng dữ liệu
+
+Dán 1–12 hàng `SĐT | Mật khẩu | Tên | Thẻ | URL OTP`. Cột trống, hàng gạch Markdown, thẻ có `\|` và link URL Markdown được nhận. Hàng n gắn Máy n, không tráo SĐT/URL. Thẻ và mật khẩu chỉ gắn dữ liệu, chưa dùng trong ảnh b1–b11. **Đã nối mã, đã test mô phỏng.**
+
+## P02 — Kiểm tra proxy và tên Profile
+
+Mỗi máy cần proxy tương ứng khi tạo profile mới. Tool kiểm tra tên qN đã tồn tại hay chưa; không tạo trùng hoặc tự đổi tên. Trên danh sách một trang, không gõ qN vào ô lọc chỉ để xác định vắng. **Đã nối mã; q1–q3 được thấy có sẵn ngày 13/11/2026. Chính sách dùng lại hay đặt tên mới còn chờ người dùng.**
+
+## P03 — Mở form New Profile
+
+Đưa cửa sổ quản lý Swarmote lên trước, bấm **New Profile**, xác nhận form có Create, Single Create, Profile Name, ip/Host trước khi điền. Nếu form không mở, dừng; không điền vào ô tìm kiếm Profile Name. **Đã thử trực tiếp mở form rồi Cancel; chưa gửi Create trong thử nghiệm mới.**
+
+## P04 — Điền Single Create và Custom proxy
+
+Chọn Single Create và Custom; điền tên Profile, host, port, tài khoản và mật khẩu proxy bằng UIA vào form đã xác nhận. **Đã nối mã; chưa kiểm thử lại toàn bộ sau sửa New Profile.**
+
+## P05 — Test Proxy rồi Create
+
+Bấm Test Proxy; chỉ khi hiện Test Passed mới bấm Create. Sau Create, xác nhận đúng tên Profile và Device ID; nếu kết quả không chắc chắn, dừng để tránh tạo trùng. **Đã nối mã; chưa gửi Create trong phép thử gần nhất.**
+
+## P06 — Start điện thoại và chờ slot
+
+Tool gửi Start cho Profile đã xác nhận, tuân giới hạn số máy Running, và đợi slot nếu đủ máy. Mỗi máy có Device ID riêng. **Đã nối mã; các trường hợp chính có test mô phỏng.**
+
+## P07 — Mở Apps, tìm z và cài Amazon
+
+Trên đúng cửa sổ máy, mở Apps/App Store, tìm `z`, cài Amazon Shopping và xác nhận package qua ADB. Nếu app đã cài thì tiếp tục, không cài lặp. **Đã nối mã; một số máy cũ từng được kiểm tra thật, không suy ra máy mới.**
+
+## P08 — Mở Amazon tới menu ba gạch
+
+Mở Amazon, xử lý màn trước đăng nhập nếu có, bấm Browse menu Tab và xác nhận `Shop by category`/menu. Đây là điểm nối luồng riêng từng máy. **Đã nối mã; q1/q2 hiện có đường gắn từ menu.**
+
+## Q1 b1 — Bấm Gifting
+
+Từ menu, tìm thẻ Gifting trong cây UI hiện tại, cuộn khi cần và bấm. Khi mở trang danh mục, quay lại menu trước bước kế. **Đã nối mã theo ảnh; chưa thử thật q1.**
+
+## Q1 b2 — Bấm Pets
+
+Tìm thẻ Pets trên menu, bấm và quay lại menu khi cần. **Đã nối mã theo ảnh; chưa thử thật q1.**
+
+## Q1 b3 — Bấm Fashion and Beauty
+
+Tìm thẻ Fashion and Beauty trên menu, bấm. Bước chung b4 sẽ đưa về menu trước Sign In. **Đã nối mã theo ảnh; chưa thử thật q1.**
+
+## Q2 b1 — Bấm Home và xem 2–5 giây
+
+Từ menu, bấm Home Tab ở thanh dưới. Xác nhận trang chủ bằng `Sign in for the best experience` hoặc Home Tab được chọn; chờ một khoảng chọn trong 2, 3, 4, 5 giây. **Đã nối mã theo ảnh; chưa thử thật q2.**
+
+## Q2 b2 — Bấm menu ba gạch
+
+Từ trang chủ, bấm Browse menu Tab và xác nhận menu. **Đã nối mã theo ảnh; chưa thử thật q2.**
+
+## Q2 b3 — Bấm Pets
+
+Tìm Pets trên menu hiện tại, cuộn khi cần và bấm. Bước chung b4 đưa về menu trước Sign In. **Đã nối mã theo ảnh; chưa thử thật q2.**
+
+## Chung b4 — Sign In từ menu
+
+Tìm hàng Sign In ở cuối menu bằng chữ trong UI, cuộn khi cần, bấm và xác nhận form `Sign in or create account`. **Đã nối mã cho q1/q2; chưa thử thật luồng mới.**
+
+## Chung b5 — Gõ số điện thoại
+
+Gõ nguyên chuỗi SĐT của đúng hàng từng ký tự vào ô `Enter mobile number or email`, rồi đọc lại. Không dán clipboard. **Đã nối mã; chưa thử thật.**
+
+## Chung b6 — Chọn United States +1
+
+Sau khi gõ số, mở Country/region code, cuộn tìm United States +1, chọn và đọc lại số/mã quốc gia. Ảnh b6 do người dùng gửi có tiêu đề cửa sổ q6, chỉ là tham chiếu UI. **Đã nối mã; chưa xác minh trên q1/q2 thật.**
+
+## Chung b7 — Continue số điện thoại
+
+Chỉ bấm Continue khi form và số US +1 khớp hàng của máy. Nếu chuyển sang màn đăng nhập cũ hoặc màn lạ, dừng. **Đã nối mã; chưa thử thật.**
+
+## Chung b8 — Proceed to create an account
+
+Xác nhận màn `Looks like you are new to Amazon` và SĐT, rồi bấm `Proceed to create an account`. **Đã nối mã; chưa thử thật.**
+
+## Chung b9 — Nhập tên và Continue
+
+Trên form Create account, gõ `First and last name` từ đúng hàng từng ký tự, đọc lại rồi bấm Continue. Ảnh chưa có ô mật khẩu; không tự điền mật khẩu vào chỗ khác. **Đã nối mã; chưa thử thật.**
+
+## Chung b10 — Chuyển WhatsApp sang SMS
+
+Ở màn Verify with WhatsApp, xác nhận đúng SĐT, đọc mã cũ từ URL OTP của hàng, bấm `Send code by SMS` một lần và chờ màn SMS. Nếu chuyển màn chậm, không bấm gửi lặp. **Đã nối mã; chưa gọi URL thật.**
+
+## Chung b11a — Lấy và gõ OTP SMS
+
+Chờ phản hồi `yes|Amazon: 123456 is your sign-in code.` trên URL riêng, chỉ lấy sáu số mới khác mã cũ, gõ từng số vào `Enter security code` và đọc lại. Đồng hồ lượt của máy kết thúc khi ô đúng. **Đã nối mã; chưa thử thật.**
+
+## Chung b11b — Bấm Create your Amazon account
+
+Sau khi OTP đúng, bấm Create một lần với khoảng kiểm tra riêng; nếu màn chưa chuyển, dừng để người dùng xem, không bấm lặp. **Đã nối mã; chưa có ảnh màn kết quả. Không khẳng định tài khoản thành công.**
+
+## E01 — Dừng lỗi và Tiếp tục
+
+Mỗi máy có bước hiện tại, lỗi và đồng hồ riêng. Khi lỗi, máy dừng tại chỗ; người dùng sửa trực tiếp rồi bấm Tiếp tục để đọc lại UI, tránh gửi SMS/Create lặp. Chu kỳ lượt 3→4→5→4 phút rồi lặp. **Đã nối mã và test mô phỏng; cần thử thật.**
+
+## U01 — Màn sau Create chưa được hướng dẫn
+
+Chưa có ảnh hay tiêu chí xác nhận kết quả sau nút Create. Tool chỉ báo đã xong các bước được hướng dẫn, không báo tài khoản thành công.
+
+## U02 — q3–q12 chưa có b1–b3
+
+Người dùng chưa gửi ảnh và hướng dẫn riêng cho b1–b3 của từng máy q3–q12. Các máy này vẫn dừng ở menu ba gạch. Không sao chép b1–b3 của q1 hoặc q2 sang chúng.
+
+## U03 — Ảnh tiếp theo có thể bổ sung hoặc sửa quy trình
+
+Đây là danh mục **những gì đã biết**, không phải quy trình cuối cùng. Khi nhận ảnh mới, cập nhật đúng máy và mốc, ghi màn trước/sau và mức kiểm chứng, sửa mã nếu cần, rồi cập nhật graph. Không tự điền bước chưa được người dùng chỉ.
