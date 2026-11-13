@@ -95,12 +95,16 @@ def home_visible(nodes: list[dict[str, str]]) -> bool:
                 and node.get("selected") == "true" for node in nodes))
 
 
+class _UiReadIncomplete(ToolError):
+    pass
+
+
 def _read_nodes(phone: CloudPhone, deadline: AttemptDeadline,
                 stop: threading.Event) -> list[dict[str, str]]:
     try:
         return _read_nodes_once(phone, deadline, stop)
     except ToolError as exc:
-        if not isinstance(exc.__cause__, TimeoutExpired):
+        if not isinstance(exc, _UiReadIncomplete) and not isinstance(exc.__cause__, TimeoutExpired):
             raise
     return _read_nodes_once(phone, deadline, stop)
 
@@ -113,13 +117,15 @@ def _read_nodes_once(phone: CloudPhone, deadline: AttemptDeadline,
     dumped = cloud_adb(phone, "shell", "uiautomator", "dump", UI_PATH,
                        timeout=timeout, check=False)
     if dumped.returncode and f"dumped to: {UI_PATH}" not in dumped.stdout:
-        raise ToolError("Không đọc được cây giao diện Amazon")
-    xml = cloud_adb(phone, "shell", "cat", UI_PATH, timeout=timeout,
-                    check=False).stdout
+        raise _UiReadIncomplete("Không đọc được cây giao diện Amazon")
+    result = cloud_adb(phone, "shell", "cat", UI_PATH,
+                       timeout=max(1, math.ceil(min(6, deadline.remaining()))), check=False)
+    if result.returncode:
+        raise _UiReadIncomplete("Không lấy được cây giao diện Amazon từ ADB")
     try:
-        nodes = _parse_ui_nodes(xml)
+        nodes = _parse_ui_nodes(result.stdout)
     except ET.ParseError as exc:
-        raise ToolError("Cây giao diện Amazon chưa hợp lệ") from exc
+        raise _UiReadIncomplete("Cây giao diện Amazon chưa hợp lệ") from exc
     if not nodes:
         raise ToolError("Amazon không ở màn hình trước; giữ nguyên máy này")
     return nodes
@@ -157,6 +163,16 @@ def _tap(phone: CloudPhone, node: dict[str, str], deadline: AttemptDeadline) -> 
     cloud_adb(phone, "shell", "input", "tap", str((x1 + x2) // 2),
               str((y1 + y2) // 2),
               timeout=max(1, math.ceil(min(6, deadline.remaining()))))
+
+
+def _tap_for_transition(phone: CloudPhone, node: dict[str, str],
+                        deadline: AttemptDeadline) -> None:
+    """An ADB timeout can happen after the tap reached Android."""
+    try:
+        _tap(phone, node, deadline)
+    except ToolError as exc:
+        if not isinstance(exc.__cause__, TimeoutExpired):
+            raise
 
 
 def _unique(nodes: list[dict[str, str]], label: str,
@@ -242,12 +258,26 @@ def _wait_screen(phone: CloudPhone, expected: set[str],
                  deadline: AttemptDeadline, stop: threading.Event,
                  *, seconds: float = 10) -> list[dict[str, str]]:
     until = time.monotonic() + deadline.allowance(seconds)
+    last_screen = "UNKNOWN"
+    last_read_failed = False
     while time.monotonic() < until:
-        nodes = _read_nodes(phone, deadline, stop)
-        if screen(nodes) in expected:
-            return nodes
+        try:
+            nodes = _read_nodes(phone, deadline, stop)
+        except ToolError as exc:
+            if not isinstance(exc, _UiReadIncomplete) and not isinstance(exc.__cause__, TimeoutExpired):
+                raise
+            last_read_failed = True
+        else:
+            last_read_failed = False
+            last_screen = screen(nodes)
+            if last_screen in expected:
+                return nodes
         stop.wait(min(0.1, max(0, until - time.monotonic())))
-    raise ToolError("Chưa nhận diện được màn kế tiếp từ cây giao diện Android")
+    if stop.is_set():
+        raise ToolError("Đã dừng máy này")
+    detail = " Lần đọc cuối bị lỗi ADB." if last_read_failed else ""
+    raise ToolError(f"Chưa xác nhận màn kế tiếp. Màn đọc được: {last_screen}. "
+                    f"Màn cần thấy: {', '.join(sorted(expected))}.{detail}")
 
 
 def visit_home(phone: CloudPhone, deadline: AttemptDeadline,
@@ -520,8 +550,8 @@ def build_common_steps(phone: CloudPhone,
         if _at_or_after(nodes, "NEW_ACCOUNT"):
             return
         _ensure_menu(phone, deadline, stop)
-        _tap(phone, _find_scrolling(phone, "Sign In", deadline, stop,
-                                    menu_action=True), deadline)
+        _tap_for_transition(phone, _find_scrolling(phone, "Sign In", deadline, stop,
+                                                   menu_action=True), deadline)
 
     def focus_phone(job: RunJob, deadline: AttemptDeadline,
                     stop: threading.Event) -> None:
@@ -553,12 +583,12 @@ def build_common_steps(phone: CloudPhone,
                 r"[a-z]{2}\s*\+\d+", _text(node))]
             if len(candidates) != 1:
                 raise ToolError("Không xác định được ô chọn mã quốc gia")
-            _tap(phone, candidates[0], deadline)
+            _tap_for_transition(phone, candidates[0], deadline)
             nodes = _wait_screen(phone, {"COUNTRY"}, deadline, stop)
         if screen(nodes) != "COUNTRY":
             raise ToolError("Máy này chưa ở danh sách mã quốc gia")
-        _tap(phone, _find_scrolling(phone, "United States +1", deadline, stop,
-                                    country_list=True, nodes=nodes), deadline)
+        _tap_for_transition(phone, _find_scrolling(phone, "United States +1", deadline, stop,
+                                                   country_list=True, nodes=nodes), deadline)
         nodes = _wait_screen(phone, {"IDENTIFIER"}, deadline, stop)
         if not _has(nodes, "US +1"):
             raise ToolError("Amazon chưa xác nhận mã US +1")
@@ -571,7 +601,7 @@ def build_common_steps(phone: CloudPhone,
         if screen(nodes) != "IDENTIFIER" or not _has(nodes, "US +1"):
             raise ToolError("Máy này chưa xác nhận số điện thoại US +1")
         _check_summary(nodes, job)
-        _tap(phone, _button(nodes, "Continue"), deadline)
+        _tap_for_transition(phone, _button(nodes, "Continue"), deadline)
         _wait_screen(phone, {"NEW_ACCOUNT", "CREATE_FORM"}, deadline, stop)
 
     def proceed(job: RunJob, deadline: AttemptDeadline,
@@ -582,7 +612,7 @@ def build_common_steps(phone: CloudPhone,
         if screen(nodes) != "NEW_ACCOUNT":
             raise ToolError("Máy này chưa ở màn tạo tài khoản mới")
         _check_summary(nodes, job)
-        _tap(phone, _button(nodes, "Proceed to create an account"), deadline)
+        _tap_for_transition(phone, _button(nodes, "Proceed to create an account"), deadline)
         _wait_screen(phone, {"CREATE_FORM", "WHATSAPP", "SMS"}, deadline, stop)
 
     def name(job: RunJob, deadline: AttemptDeadline,
@@ -613,7 +643,7 @@ def build_common_steps(phone: CloudPhone,
             if field.get("text", "") != job.account.full_name:
                 raise ToolError("Chưa xác nhận được tên sau khi đóng bàn phím")
             button = _button(nodes, "Continue", below=field)
-        _tap(phone, button, deadline)
+        _tap_for_transition(phone, button, deadline)
         _wait_screen(phone, {"WHATSAPP", "SMS"}, deadline, stop)
 
     def send_sms(job: RunJob, deadline: AttemptDeadline,
@@ -629,7 +659,7 @@ def build_common_steps(phone: CloudPhone,
         if screen(nodes) != "WHATSAPP" or job.account is None:
             raise ToolError("Máy này chưa ở màn chọn gửi mã bằng SMS")
         _check_summary(nodes, job)
-        _tap(phone, _button(nodes, "Send code by SMS"), deadline)
+        _tap_for_transition(phone, _button(nodes, "Send code by SMS"), deadline)
         state.sms_requested_at = time.monotonic()
         on_status("Đang chờ mã")
         _wait_screen(phone, {"SMS"}, deadline, stop)
@@ -684,7 +714,7 @@ def build_common_steps(phone: CloudPhone,
         if not re.fullmatch(r"[0-9]{6}", value):
             raise ToolError("Máy này chưa nhập đủ OTP để tạo tài khoản")
         if not state.create_pressed:
-            _tap(phone, _button(nodes, "Create your Amazon account"), deadline)
+            _tap_for_transition(phone, _button(nodes, "Create your Amazon account"), deadline)
             state.create_pressed = True
         until = time.monotonic() + deadline.allowance(10)
         while time.monotonic() < until:

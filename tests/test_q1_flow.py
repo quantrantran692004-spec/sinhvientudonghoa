@@ -427,6 +427,30 @@ class Q1FlowTests(unittest.TestCase):
                 send_sms(self.job, self.deadline, self.stop)
         tap.assert_called_once()
 
+    def test_sms_tap_timeout_checks_next_screen_without_resending(self):
+        error = ToolError("ADB timeout")
+        error.__cause__ = TimeoutExpired("adb", 6)
+        whatsapp = [node("Verify with WhatsApp"), node("Send code by SMS"),
+                    node(self.job.account.phone)]
+        sms = [node("Verify mobile number"), node("Enter security code")]
+        send_sms = next(step.action for step in build_common_steps(self.phone, lambda _: None)
+                        if step.name.startswith("b10"))
+        with patch("amazon_android.account_flow._read_nodes",
+                   side_effect=[whatsapp, sms]), \
+             patch("amazon_android.account_flow._tap", side_effect=error) as tap:
+            send_sms(self.job, self.deadline, self.stop)
+        tap.assert_called_once()
+
+    def test_incomplete_ui_dump_is_read_again_before_using_controls(self):
+        incomplete = SimpleNamespace(returncode=0, stdout="<hierarchy>")
+        valid = SimpleNamespace(returncode=0, stdout=
+            f'<hierarchy><node package="{AMAZON_PACKAGE}" text="Continue" /></hierarchy>')
+        with patch("amazon_android.account_flow.cloud_adb", side_effect=[
+                incomplete, incomplete, valid, valid]) as adb:
+            result = _read_nodes(self.phone, self.deadline, self.stop)
+        self.assertEqual(result[0]["text"], "Continue")
+        self.assertEqual(adb.call_count, 4)
+
     def test_sms_screen_after_manual_send_continues_without_second_tap(self):
         statuses = []
         send_sms = next(step.action for step in build_common_steps(

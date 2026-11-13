@@ -118,6 +118,8 @@ Sau khi OTP đúng, bấm Create một lần với khoảng kiểm tra riêng; n
 
 ## E01 — Dừng lỗi và Tiếp tục
 
+Trước khi dừng vì lỗi đọc tạm thời, tool thử lại cây giao diện trong thời hạn của máy. Nếu ADB hết hạn khi bấm nút chuyển màn, tool đọc màn kế tiếp để xác định cú bấm có tới Android chưa. Nếu không xác nhận được, báo màn đã đọc và màn cần thấy. Bước gửi SMS và Create giữ trạng thái đã thử bấm để tránh tự gửi lặp.
+
 Mỗi máy có bước hiện tại, lỗi và đồng hồ riêng. Khi lỗi, máy dừng tại chỗ; người dùng sửa trực tiếp rồi bấm Tiếp tục để đọc lại UI. Nếu q1/q2 đang ở màn SĐT dù mốc lưu đã tới b10, tool quay về b4 của chính máy đó và tạo lại trạng thái bước; không xóa hàng dữ liệu. Không gửi SMS hoặc bấm Create lặp khi màn phản hồi chậm; mốc Create đã bấm không tự tua lại. Chu kỳ lượt 3→4→5→4 phút rồi lặp. **Đã nối mã và test mô phỏng; cần thử thật sau sửa.**
 
 ## U01 — Màn sau Create chưa được hướng dẫn

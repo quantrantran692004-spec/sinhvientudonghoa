@@ -19,6 +19,8 @@ Menu ba gạch có thêm biến thể dạng danh sách: trên các máy đã n�
 
 ## Trạng thái kiểm chứng và giới hạn
 
+- Luồng dùng chung tự đọc lại khi ADB hết hạn, lấy file thất bại hoặc trả XML chưa hợp lệ. Trong lúc chờ màn kế tiếp, các lỗi đọc tạm thời được thử lại theo thời hạn. Nếu cú bấm chuyển màn hết hạn ở ADB, kiểm tra màn sau cú bấm trước khi quyết định bước tiếp theo. Gửi SMS và Create vẫn giữ dấu đã bấm để tránh gửi lặp. Khi không thể xác nhận, thông báo ghi màn đọc được và màn cần thấy, không kèm dữ liệu tài khoản. 148 bài test đã qua, gồm cú bấm SMS bị timeout nhưng đã chuyển màn và XML lỗi được đọc lại. Chưa xác minh trên Swarmote thật.
+
 - B11 thử Chrome ẩn, Edge ẩn rồi tự mở một cửa sổ Chrome riêng nếu chưa đọc được mã. Tool dành một phần thời hạn đọc OTP cho cửa sổ này, chờ người dùng xử lý xác minh nếu trang yêu cầu và đóng cửa sổ sau khi lấy mã, hết hạn hoặc dừng. Nếu vẫn lỗi, Tiếp tục giữ phương án nhập tay. Chưa xác minh với APIFC thật.
 
 - B11a chạm ô OTP ngay khi nhận ra màn SMS và xác nhận đúng SĐT. Khi nhận được mã, b11 đọc lại màn, xác nhận đúng SĐT và kiểm tra focus trước khi gõ. Test mô phỏng bao gồm trường hợp nguồn mã lỗi sau khi ô đã được chạm và ô mất focus trong lúc chờ mã. 145 bài test đạt. Ảnh q1 báo đúng chuỗi lỗi 403 của bộ đọc HTTP cũ, đã bỏ khỏi luồng mặc định tại `07ab6d1`. Chưa đọc được q1 thật vì phiên kiểm tra không thấy ADB.
