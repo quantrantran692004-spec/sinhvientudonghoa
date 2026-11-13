@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "amazon_android/otp.py": {
-    "mtime": 1794560068.3905206,
-    "seen": 1794560343.9721034,
-    "ast_hash": "80666a629ae5edb50d0c5c6388b0218c",
+    "mtime": 1794561093.5981867,
+    "seen": 1794561156.2728035,
+    "ast_hash": "3ac33788b1e21e7771c6e0c6dd004d8a",
     "semantic_hash": ""
   },
   "amazon_android/post_menu.py": {
@@ -156,9 +156,9 @@
     "semantic_hash": ""
   },
   "tests/test_otp.py": {
-    "mtime": 1794558059.9123454,
-    "seen": 1794558283.407869,
-    "ast_hash": "6ae9d41036d3b1be2936bddb1ecbb691",
+    "mtime": 1794561093.8295586,
+    "seen": 1794561156.2738318,
+    "ast_hash": "7eccb24c0b4528aef940fb3b9fc3cc95",
     "semantic_hash": ""
   },
   "tests/test_post_menu.py": {
@@ -174,9 +174,9 @@
     "semantic_hash": "a65e174733830e2a7a9249d7ae106c46"
   },
   "tests/test_q1_flow.py": {
-    "mtime": 1794560828.5957983,
-    "seen": 1794560871.4714715,
-    "ast_hash": "121240bf1f1fa69420f82b0319a8da72",
+    "mtime": 1794561106.1045618,
+    "seen": 1794561156.2738318,
+    "ast_hash": "8b8fdf332fa5c57667c3746f406f6a2d",
     "semantic_hash": ""
   },
   "tests/test_registration.py": {
@@ -258,9 +258,9 @@
     "semantic_hash": ""
   },
   "PROJECT_HANDOFF.md": {
-    "mtime": 1794560849.8877828,
-    "seen": 1794560871.4714715,
-    "ast_hash": "725b35bf709978f90950fab57d53f708",
+    "mtime": 1794561141.9741945,
+    "seen": 1794561156.2738318,
+    "ast_hash": "df16f82f770c53955bbe6ea711c4fab2",
     "semantic_hash": ""
   },
   "Q1_FLOW.md": {
@@ -348,15 +348,15 @@
     "semantic_hash": ""
   },
   "STEP_INVENTORY.md": {
-    "mtime": 1794560849.595307,
-    "seen": 1794560871.4714715,
-    "ast_hash": "b2ee733400a21095666d4dba31a28517",
+    "mtime": 1794561142.1971536,
+    "seen": 1794561156.2738318,
+    "ast_hash": "e7bd2ee16d2e68fe786042a356430e84",
     "semantic_hash": ""
   },
   "amazon_android/account_flow.py": {
-    "mtime": 1794560709.6988924,
-    "seen": 1794560871.4714715,
-    "ast_hash": "bd15ed6fa88233eac279105efea8b3db",
+    "mtime": 1794561076.899562,
+    "seen": 1794561156.2728035,
+    "ast_hash": "a8196bb0de409b1f61fe1ce05821a7af",
     "semantic_hash": ""
   },
   "ASSET_INDEX.md": {

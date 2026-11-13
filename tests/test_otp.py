@@ -49,7 +49,7 @@ class OtpTests(unittest.TestCase):
                    url_b: iter(["222222", "444444"])}
         lock = threading.Lock()
 
-        def next_code(url):
+        def next_code(url, *, timeout):
             with lock:
                 return next(replies[url])
 

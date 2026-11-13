@@ -166,6 +166,13 @@ def _button(nodes: list[dict[str, str]], label: str,
         if len(distinct) == 1:
             return next(iter(distinct.values()))
         if len(distinct) > 1:
+            if below is not None:
+                # A WebView may expose the button and its nested label separately.
+                for outer in distinct.values():
+                    left, top, right, bottom = _bounds(outer)
+                    if all(left <= x1 < x2 <= right and top <= y1 < y2 <= bottom
+                           for x1, y1, x2, y2 in map(_bounds, distinct.values())):
+                        return outer
             break
     raise ToolError(f"Không xác định được duy nhất nút '{label}' trên máy này")
 
@@ -178,7 +185,7 @@ def _wait_screen(phone: CloudPhone, expected: set[str],
         nodes = _read_nodes(phone, deadline, stop)
         if screen(nodes) in expected:
             return nodes
-        stop.wait(min(0.4, max(0, until - time.monotonic())))
+        stop.wait(min(0.2, max(0, until - time.monotonic())))
     raise ToolError("Amazon chưa hiện màn hình kế tiếp như ảnh hướng dẫn")
 
 
@@ -226,7 +233,19 @@ def route_list_menu(phone: CloudPhone, steps: tuple[PostMenuStep, ...],
 
 
 def _scroll_up(phone: CloudPhone, nodes: list[dict[str, str]],
-               deadline: AttemptDeadline) -> None:
+               deadline: AttemptDeadline, *, country_list: bool = False) -> None:
+    if country_list:
+        scroll_regions = {_bounds(node) for node in nodes
+                          if node.get("scrollable") == "true" and _visible(node)}
+        if len(scroll_regions) == 1:
+            left, top, right, bottom = scroll_regions.pop()
+            x = (left + right) // 2
+            height = bottom - top
+            cloud_adb(phone, "shell", "input", "swipe", str(x),
+                      str(top + int(height * 0.88)), str(x),
+                      str(top + int(height * 0.12)), "270",
+                      timeout=max(1, math.ceil(min(6, deadline.remaining()))))
+            return
     dimensions = []
     for node in nodes:
         try:
@@ -243,16 +262,18 @@ def _scroll_up(phone: CloudPhone, nodes: list[dict[str, str]],
         if not found:
             raise ToolError("Không xác định được kích thước màn hình máy này")
         width, height = map(int, found.groups())
+    start, end, duration = (0.84, 0.20, "270") if country_list else (0.72, 0.32, "360")
     cloud_adb(phone, "shell", "input", "swipe", str(width // 2),
-              str(int(height * 0.72)), str(width // 2),
-              str(int(height * 0.32)), "360",
+              str(int(height * start)), str(width // 2),
+              str(int(height * end)), duration,
               timeout=max(1, math.ceil(min(6, deadline.remaining()))))
 
 
 def _find_scrolling(phone: CloudPhone, label: str,
                     deadline: AttemptDeadline, stop: threading.Event,
                     *, starts: bool = False,
-                    menu_action: bool = False) -> dict[str, str]:
+                    menu_action: bool = False,
+                    country_list: bool = False) -> dict[str, str]:
     previous = None
     for _ in range(30):
         nodes = _read_nodes(phone, deadline, stop)
@@ -277,8 +298,8 @@ def _find_scrolling(phone: CloudPhone, label: str,
         if visible == previous:
             break
         previous = visible
-        _scroll_up(phone, nodes, deadline)
-        stop.wait(0.35)
+        _scroll_up(phone, nodes, deadline, country_list=country_list)
+        stop.wait(0.15 if country_list else 0.35)
     raise ToolError(f"Không tìm thấy '{label}' sau khi cuộn máy này")
 
 
@@ -312,19 +333,23 @@ def _field(nodes: list[dict[str, str]], label: str) -> dict[str, str]:
 
 
 def _type_field(phone: CloudPhone, label: str, value: str,
-                deadline: AttemptDeadline, stop: threading.Event) -> None:
-    nodes = _read_nodes(phone, deadline, stop)
+                deadline: AttemptDeadline, stop: threading.Event, *,
+                nodes: list[dict[str, str]] | None = None) -> list[dict[str, str]]:
+    if nodes is None:
+        nodes = _read_nodes(phone, deadline, stop)
     field = _field(nodes, label)
     current = field.get("text", "")
     if current == value:
-        return
+        return nodes
     if current and not value.startswith(current):
         raise ToolError(f"Ô '{label}' khác dữ liệu của máy này; sửa trực tiếp rồi Tiếp tục")
     _tap(phone, field, deadline)
     type_characters(phone, value[len(current):], deadline, stop)
-    updated = _field(_read_nodes(phone, deadline, stop), label)
+    nodes = _read_nodes(phone, deadline, stop)
+    updated = _field(nodes, label)
     if updated.get("text", "") != value:
         raise ToolError(f"Chưa xác nhận được nội dung ô '{label}'")
+    return nodes
 
 
 def _at_or_after(nodes: list[dict[str, str]], kind: str) -> bool:
@@ -429,7 +454,7 @@ def build_common_steps(phone: CloudPhone,
         if screen(nodes) != "COUNTRY":
             raise ToolError("Máy này chưa ở danh sách mã quốc gia")
         _tap(phone, _find_scrolling(phone, "United States +1", deadline, stop,
-                                    starts=True), deadline)
+                                    country_list=True), deadline)
         nodes = _wait_screen(phone, {"IDENTIFIER"}, deadline, stop)
         if not _has(nodes, "US +1"):
             raise ToolError("Amazon chưa xác nhận mã US +1")
@@ -464,9 +489,10 @@ def build_common_steps(phone: CloudPhone,
         if screen(nodes) != "CREATE_FORM" or job.account is None:
             raise ToolError("Máy này chưa ở form nhập tên")
         _check_summary(nodes, job)
-        _type_field(phone, "First and last name", job.account.full_name,
-                    deadline, stop)
-        nodes = _read_nodes(phone, deadline, stop)
+        nodes = _type_field(phone, "First and last name", job.account.full_name,
+                            deadline, stop, nodes=nodes)
+        if screen(nodes) != "CREATE_FORM":
+            raise ToolError("Amazon không còn ở form nhập tên")
         _tap(phone, _button(nodes, "Continue",
                             below=_field(nodes, "First and last name")), deadline)
         _wait_screen(phone, {"WHATSAPP", "SMS"}, deadline, stop)
@@ -501,9 +527,13 @@ def build_common_steps(phone: CloudPhone,
             return
         if not state.sms_requested:
             raise ToolError("Chưa xác nhận được lần gửi SMS; sửa mã trên máy rồi Tiếp tục")
-        code = state.code or wait_for_new_otp(
-            job.account.otp_url, None,
-            timeout=deadline.allowance(30), stop=stop)
+        try:
+            code = state.code or wait_for_new_otp(
+                job.account.otp_url, None,
+                timeout=deadline.allowance(30), stop=stop)
+        except ToolError:
+            on_status("Không đọc được mã SMS")
+            raise
         _type_field(phone, "Enter security code", code, deadline, stop)
         state.code = code
         on_otp(code)

@@ -74,6 +74,8 @@ Gõ nguyên chuỗi SĐT của đúng hàng từng ký tự vào ô `Enter mobil
 
 ## Chung b6 — Chọn United States +1
 
+B6 vuốt dài trong vùng danh sách nếu cây UI cung cấp đúng một vùng cuộn hợp lệ. Sau mỗi lần vuốt, đọc cây UI và tìm đúng nhãn `United States +1`. Chỉ bấm khi mục có vùng hợp lệ. Chưa đo tốc độ trên Swarmote thật.
+
 Sau khi gõ số, mở Country/region code, cuộn tới gần cuối tìm United States +1, chọn và đọc lại số/mã quốc gia. Không bấm mục US ẩn có vùng `[0,0][0,0]`; tiếp tục cuộn đến mục đang hiển thị và có vùng bấm hợp lệ. Ảnh b6 ban đầu có tiêu đề cửa sổ q6, chỉ là tham chiếu UI. q1 đã báo lỗi vùng bấm b6; **đã sửa mã chung, chưa xác minh lại trên máy thật.**
 
 Sáu ảnh q1 mới ngày 13/11 cho thấy dropdown vẫn ở chữ A khi báo lỗi. Mã hiện tại lọc cả ô mở mã quốc gia bị ẩn, và chỉ bấm mục US +1 có bounds hợp lệ sau khi cuộn. Có test hồi quy cho trạng thái danh sách đang ở đầu. Chưa xác nhận phiên tool trên màn đã nạp mã này.
@@ -88,6 +90,8 @@ Xác nhận màn `Looks like you are new to Amazon` và SĐT, rồi bấm `Proce
 
 ## Chung b9 — Nhập tên và Continue
 
+Khi cây UI trả nhiều mục Continue có vùng lồng nhau bên dưới ô tên, dùng vùng ngoài cùng của cùng một nút. Nếu còn nhiều vùng riêng biệt, giữ điểm dừng. Dùng lại cây UI đã đọc để xác nhận ô tên và tìm nút.
+
 Trên form Create account, gõ `First and last name` từ đúng hàng từng ký tự, đọc lại rồi bấm Continue đang hiển thị, có thể bấm và nằm dưới ô tên. Bỏ qua bản sao nhãn ẩn hoặc không thể bấm. Ảnh chưa có ô mật khẩu; không tự điền mật khẩu vào chỗ khác. q1 đã báo lỗi nhiều Continue; **đã sửa mã chung, chưa xác minh lại trên máy thật.**
 
 ## Chung b10 — Chuyển WhatsApp sang SMS
@@ -97,6 +101,8 @@ Trên form Create account, gõ `First and last name` từ đúng hàng từng k�
 Ảnh mới cho thấy báo HTTP 403 ở b10 trong khi màn còn WhatsApp. Mã nguồn hiện tại không gọi URL tại b10; test hồi quy xác nhận thứ tự bấm SMS → xác nhận màn SMS → đọc URL tại b11. Đây là dấu hiệu phiên tool trên màn có thể đang chạy mã cũ, chưa có bằng chứng phiên hiện tại đã nạp bản mới.
 
 ## Chung b11a — Lấy và gõ OTP SMS
+
+Ảnh mới xác nhận Amazon đã gửi SMS nhưng URL OTP trả HTTP 403. B11 báo lỗi đọc mã thay cho trạng thái đang chờ. Nếu có mã SMS hợp lệ, nhập vào ô Amazon rồi bấm Tiếp tục tại hàng máy đó. HTTP 403 kéo dài cần kiểm tra với bên cấp URL OTP.
 
 Chờ phản hồi `yes|Amazon: 123456 is your sign-in code.` trên URL riêng sau khi gửi SMS, lấy đúng sáu số, gõ từng số vào `Enter security code` và đọc lại. Nếu URL tạm trả HTTP 403, tiếp tục chờ trong giới hạn; nếu vẫn 403 thì dừng để kiểm tra URL của hàng. Phản hồi chỉ có mã, không có dấu thời gian nên chưa thể chứng minh mã là mới khi URL từng có mã cũ. Đồng hồ lượt của máy kết thúc khi ô đúng. **Đã sửa mã và test mô phỏng; chưa thử thật sau sửa.**
 

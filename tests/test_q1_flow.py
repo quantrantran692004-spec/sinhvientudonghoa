@@ -6,7 +6,7 @@ from amazon_android.cloud import CloudPhone
 from amazon_android.core import ToolError
 from amazon_android.post_menu import AttemptDeadline, PostMenuSession
 from amazon_android.account_flow import (
-    _button, _find_scrolling, _national_phone, _unique,
+    _button, _find_scrolling, _national_phone, _scroll_up, _unique,
     build_common_steps, menu_layout, resume_common_index,
     route_list_menu, screen,
 )
@@ -162,6 +162,13 @@ class Q1FlowTests(unittest.TestCase):
                      kind="android.widget.EditText")
         self.assertIs(_button([hidden, button], "Continue", below=field), button)
 
+    def test_name_continue_combines_nested_webview_controls(self):
+        row = node("Continue", bounds="[20,470][350,520]")
+        label = node("Continue", bounds="[140,480][230,510]")
+        row["clickable"] = label["clickable"] = "true"
+        field = node("Name", bounds="[30,210][350,250]")
+        self.assertIs(_button([label, row], "Continue", below=field), row)
+
     def test_country_scrolls_past_hidden_us_entry(self):
         hidden = node("United States +1", bounds="[0,0][0,0]")
         visible = node("United States +1", bounds="[50,320][320,360]")
@@ -190,6 +197,18 @@ class Q1FlowTests(unittest.TestCase):
             action(self.job, self.deadline, self.stop)
         scroll.assert_called_once()
         self.assertIs(tap.call_args.args[1], visible)
+
+    def test_b6_long_swipe_stays_inside_country_list(self):
+        region = node("", bounds="[40,120][340,720]")
+        region["scrollable"] = "true"
+        with patch("amazon_android.account_flow.cloud_adb") as adb:
+            _scroll_up(self.phone, [region], self.deadline, country_list=True)
+        _, _, _, _, x1, y1, x2, y2, duration = adb.call_args.args
+        self.assertEqual(x1, x2)
+        self.assertTrue(40 < int(x1) < 340)
+        self.assertTrue(120 < int(y2) < int(y1) < 720)
+        self.assertGreater(int(y1) - int(y2), 400)
+        self.assertLess(int(duration), 360)
 
     def test_phone_uses_input_digits_then_checks_us_national_number(self):
         self.assertEqual(_national_phone(self.job), "2025550123")

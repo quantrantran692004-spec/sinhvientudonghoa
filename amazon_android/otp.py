@@ -88,8 +88,11 @@ def wait_for_new_otp(url: str, previous_code: str | None, *,
     stop = stop or threading.Event()
     last_http_403 = False
     while not stop.is_set():
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            break
         try:
-            code = read_otp(url)
+            code = read_otp(url, timeout=min(5, remaining))
             last_http_403 = False
         except ToolError as exc:
             if str(exc) != "URL OTP trả HTTP 403":
@@ -106,5 +109,7 @@ def wait_for_new_otp(url: str, previous_code: str | None, *,
     if stop.is_set():
         raise ToolError("Đã dừng chờ OTP")
     if last_http_403:
-        raise ToolError("URL OTP vẫn trả HTTP 403 sau khi gửi SMS")
+        raise ToolError("Amazon đã gửi SMS, nhưng URL OTP từ chối truy cập (HTTP 403). "
+                        "Kiểm tra URL/token của máy này với bên cấp OTP, "
+                        "hoặc nhập mã SMS vào ô trên Amazon rồi bấm Tiếp tục")
     raise ToolError("Hết thời gian chờ OTP mới")
