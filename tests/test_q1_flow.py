@@ -238,13 +238,31 @@ class Q1FlowTests(unittest.TestCase):
     def test_b4_focuses_phone_field_on_existing_identifier_screen(self):
         field = node("", kind="android.widget.EditText")
         identifier = [node("Sign in or create account"),
-                      node("Enter mobile number or email"), field]
+                      node("Continue"), field,
+                      node("", kind="android.widget.EditText", bounds="[0,0][0,0]")]
         sign_in = build_common_steps(self.phone, lambda code: None)[0].action
         with patch("amazon_android.account_flow._read_nodes",
                    return_value=identifier), \
              patch("amazon_android.account_flow._tap") as tap:
             sign_in(self.job, self.deadline, self.stop)
         self.assertIs(tap.call_args.args[1], field)
+
+    def test_b5_retries_focus_before_typing_phone_number(self):
+        field = dict(node("", kind="android.widget.EditText"), focused="false")
+        focused = dict(field, focused="true")
+        filled = dict(focused, text=self.job.account.phone)
+        heading = [node("Sign in or create account"), node("Continue")]
+        steps = build_common_steps(self.phone, lambda _code: None)
+        actions = []
+        with patch("amazon_android.account_flow._read_nodes", side_effect=[
+                heading + [field], heading + [field], heading + [focused],
+                heading + [filled]]), \
+             patch("amazon_android.account_flow._tap",
+                   side_effect=lambda *_: actions.append("tap")), \
+             patch("amazon_android.account_flow.type_characters",
+                   side_effect=lambda *_: actions.append("type")):
+            steps[1].action(self.job, self.deadline, self.stop)
+        self.assertEqual(actions, ["tap", "tap", "type"])
 
     def test_paused_q1_and_q2_rewind_from_b10_to_shared_b4(self):
         identifier = [node("Sign in or create account"),

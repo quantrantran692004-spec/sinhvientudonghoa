@@ -174,9 +174,9 @@
     "semantic_hash": "a65e174733830e2a7a9249d7ae106c46"
   },
   "tests/test_q1_flow.py": {
-    "mtime": 1794561547.641015,
-    "seen": 1794561556.30869,
-    "ast_hash": "a932f6fee82e6f05d0335ff8fc27f5ce",
+    "mtime": 1794561666.3421636,
+    "seen": 1794561675.6927726,
+    "ast_hash": "bbea1431d8152a92d695127cfbd8b2c0",
     "semantic_hash": ""
   },
   "tests/test_registration.py": {
@@ -258,9 +258,9 @@
     "semantic_hash": ""
   },
   "PROJECT_HANDOFF.md": {
-    "mtime": 1794561547.8791213,
-    "seen": 1794561556.30869,
-    "ast_hash": "8dec5b35d6e445e3a8f437ecefef7caf",
+    "mtime": 1794561666.5562258,
+    "seen": 1794561675.6927726,
+    "ast_hash": "9ce408b962ca1d9e74bd4e56c0173d65",
     "semantic_hash": ""
   },
   "Q1_FLOW.md": {
@@ -354,9 +354,9 @@
     "semantic_hash": ""
   },
   "amazon_android/account_flow.py": {
-    "mtime": 1794561530.5415926,
-    "seen": 1794561556.30869,
-    "ast_hash": "ca6f220f1a1fbf4129ed5bad611aa2dc",
+    "mtime": 1794561645.9540415,
+    "seen": 1794561675.6927726,
+    "ast_hash": "b4492f142c4ec89df3548fc6aea3f4f8",
     "semantic_hash": ""
   },
   "ASSET_INDEX.md": {

@@ -24,6 +24,7 @@ from .runner import RunJob
 
 UI_PATH = "/sdcard/amazon_tool_post_menu.xml"
 SIZE = re.compile(r"(?:Physical|Override) size:\s*(\d+)x(\d+)")
+PHONE_FIELD = "Enter mobile number or email"
 
 
 def _text(node: dict[str, str]) -> str:
@@ -48,8 +49,9 @@ def screen(nodes: list[dict[str, str]]) -> str:
     if _has(nodes, "Looks like you are new to Amazon") and _has(
             nodes, "Proceed to create an account"):
         return "NEW_ACCOUNT"
-    if _has(nodes, "Sign in or create account") and _has(
-            nodes, "Enter mobile number or email"):
+    if _has(nodes, "Sign in or create account") and (
+            _has(nodes, PHONE_FIELD) or
+            (_has(nodes, "Continue") and len(_visible_edit_fields(nodes)) == 1)):
         return "IDENTIFIER"
     if (_has(nodes, "Shop by category") or
             (_has(nodes, "Sign In") and _has(nodes, "Customer Service"))):
@@ -335,12 +337,17 @@ def _ensure_menu(phone: CloudPhone, deadline: AttemptDeadline,
     return _wait_screen(phone, {"MENU"}, deadline, stop, seconds=6)
 
 
+def _visible_edit_fields(nodes: list[dict[str, str]]) -> list[dict[str, str]]:
+    return [node for node in nodes
+            if node.get("class") == "android.widget.EditText" and _visible(node)]
+
+
 def _field(nodes: list[dict[str, str]], label: str) -> dict[str, str]:
+    visible_nodes = [node for node in nodes if _visible(node)]
     try:
-        return _field_for_label(nodes, (label,))
+        return _field_for_label(visible_nodes, (label,))
     except ToolError:
-        fields = [node for node in nodes
-                  if node.get("class") == "android.widget.EditText"]
+        fields = _visible_edit_fields(visible_nodes)
         if len(fields) == 1:
             return fields[0]
     raise ToolError(f"Không xác định được ô '{label}' của máy này")
@@ -358,6 +365,13 @@ def _type_field(phone: CloudPhone, label: str, value: str,
     if current and not value.startswith(current):
         raise ToolError(f"Ô '{label}' khác dữ liệu của máy này; sửa trực tiếp rồi Tiếp tục")
     _tap(phone, field, deadline)
+    if label == PHONE_FIELD and field.get("focused") == "false":
+        active_field = _field(_read_nodes(phone, deadline, stop), label)
+        if active_field.get("focused") == "false":
+            _tap(phone, active_field, deadline)
+            active_field = _field(_read_nodes(phone, deadline, stop), label)
+        if active_field.get("focused") == "false":
+            raise ToolError("Ô SĐT chưa nhận focus. Chạm ô trên Amazon rồi bấm Tiếp tục")
     type_characters(phone, value[len(current):], deadline, stop)
     nodes = _read_nodes(phone, deadline, stop)
     updated = _field(nodes, label)
@@ -430,7 +444,7 @@ def build_common_steps(phone: CloudPhone,
                 stop: threading.Event) -> None:
         nodes = _read_nodes(phone, deadline, stop)
         if screen(nodes) == "IDENTIFIER":
-            _tap(phone, _field(nodes, "Enter mobile number or email"), deadline)
+            _tap(phone, _field(nodes, PHONE_FIELD), deadline)
             return
         if _at_or_after(nodes, "NEW_ACCOUNT"):
             return
@@ -438,7 +452,7 @@ def build_common_steps(phone: CloudPhone,
         _tap(phone, _find_scrolling(phone, "Sign In", deadline, stop,
                                     menu_action=True), deadline)
         nodes = _wait_screen(phone, {"IDENTIFIER"}, deadline, stop)
-        _tap(phone, _field(nodes, "Enter mobile number or email"), deadline)
+        _tap(phone, _field(nodes, PHONE_FIELD), deadline)
 
     def phone_number(job: RunJob, deadline: AttemptDeadline,
                      stop: threading.Event) -> None:
@@ -448,8 +462,8 @@ def build_common_steps(phone: CloudPhone,
         if screen(nodes) != "IDENTIFIER" or job.account is None:
             raise ToolError("Máy này chưa ở form nhập số điện thoại")
         _national_phone(job)
-        _type_field(phone, "Enter mobile number or email", job.account.phone,
-                    deadline, stop)
+        _type_field(phone, PHONE_FIELD, job.account.phone,
+                    deadline, stop, nodes=nodes)
 
     def country(job: RunJob, deadline: AttemptDeadline,
                 stop: threading.Event) -> None:
