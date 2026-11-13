@@ -12,6 +12,7 @@ import threading
 import time
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
+from subprocess import TimeoutExpired
 from typing import Callable
 
 from .cloud import CloudPhone, cloud_adb
@@ -87,6 +88,16 @@ def home_visible(nodes: list[dict[str, str]]) -> bool:
 
 def _read_nodes(phone: CloudPhone, deadline: AttemptDeadline,
                 stop: threading.Event) -> list[dict[str, str]]:
+    try:
+        return _read_nodes_once(phone, deadline, stop)
+    except ToolError as exc:
+        if not isinstance(exc.__cause__, TimeoutExpired):
+            raise
+    return _read_nodes_once(phone, deadline, stop)
+
+
+def _read_nodes_once(phone: CloudPhone, deadline: AttemptDeadline,
+                     stop: threading.Event) -> list[dict[str, str]]:
     if stop.is_set():
         raise ToolError("Đã dừng máy này")
     timeout = max(1, math.ceil(min(6, deadline.remaining())))
@@ -239,7 +250,7 @@ def visit_home(phone: CloudPhone, deadline: AttemptDeadline,
         while time.monotonic() < until:
             if home_visible(_read_nodes(phone, deadline, stop)):
                 break
-            stop.wait(min(0.3, max(0, until - time.monotonic())))
+            stop.wait(min(0.15, max(0, until - time.monotonic())))
         else:
             raise ToolError("Amazon chưa xác nhận Trang chủ sau khi bấm biểu tượng nhà")
     stop.wait(deadline.allowance(random.choice((2, 3, 4, 5))))
@@ -271,14 +282,14 @@ def route_list_menu(phone: CloudPhone, steps: tuple[PostMenuStep, ...],
 def _scroll_up(phone: CloudPhone, nodes: list[dict[str, str]],
                deadline: AttemptDeadline, *, country_list: bool = False,
                fling: bool = False, reverse: bool = False) -> None:
-    start, end, duration = (0.72, 0.32, "360")
+    start, end, duration = (0.72, 0.32, "300")
     if country_list:
         if fling:
-            start, end, duration = (0.94, 0.06, "100")
+            start, end, duration = (0.96, 0.04, "65")
         elif reverse:
-            start, end, duration = (0.35, 0.65, "320")
+            start, end, duration = (0.35, 0.65, "240")
         else:
-            start, end, duration = (0.88, 0.12, "270")
+            start, end, duration = (0.88, 0.12, "220")
         scroll_regions = {_bounds(node) for node in nodes
                           if node.get("scrollable") == "true" and _visible(node)}
         if len(scroll_regions) == 1:
@@ -307,7 +318,7 @@ def _scroll_up(phone: CloudPhone, nodes: list[dict[str, str]],
             raise ToolError("Không xác định được kích thước màn hình máy này")
         width, height = map(int, found.groups())
     if fling:
-        start, end = 0.86, 0.18
+        start, end = 0.90, 0.14
     cloud_adb(phone, "shell", "input", "swipe", str(width // 2),
               str(int(height * start)), str(width // 2),
               str(int(height * end)), duration,
@@ -318,10 +329,12 @@ def _find_scrolling(phone: CloudPhone, label: str,
                     deadline: AttemptDeadline, stop: threading.Event,
                     *, starts: bool = False,
                     menu_action: bool = False,
-                    country_list: bool = False) -> dict[str, str]:
+                    country_list: bool = False,
+                    nodes: list[dict[str, str]] | None = None) -> dict[str, str]:
     previous = None
     for attempt in range(30):
-        nodes = _read_nodes(phone, deadline, stop)
+        if nodes is None:
+            nodes = _read_nodes(phone, deadline, stop)
         target = label.casefold()
         matches = [node for node in nodes if _visible(node) and
                    (_text(node).startswith(target) if starts else _text(node) == target)]
@@ -346,10 +359,12 @@ def _find_scrolling(phone: CloudPhone, label: str,
         reverse = country_list and any(text.startswith(("uruguay +", "uzbekistan +",
                    "vanuatu +", "vietnam +", "yemen +", "zambia +", "zimbabwe +"))
                    for text in visible)
-        fling = country_list and attempt == 0 and not reverse
+        far_from_us = any(re.fullmatch(r"[a-s][^+]*\+\d+", text) for text in visible)
+        fling = country_list and not reverse and (attempt == 0 or far_from_us)
         _scroll_up(phone, nodes, deadline, country_list=country_list,
                    fling=fling, reverse=reverse)
-        stop.wait(0.45 if fling else 0.1 if country_list else 0.2)
+        stop.wait(0.4 if fling else 0.1 if country_list else 0.12)
+        nodes = None
     raise ToolError(f"Không tìm thấy '{label}' sau khi cuộn máy này")
 
 
@@ -525,7 +540,7 @@ def build_common_steps(phone: CloudPhone,
         if screen(nodes) != "COUNTRY":
             raise ToolError("Máy này chưa ở danh sách mã quốc gia")
         _tap(phone, _find_scrolling(phone, "United States +1", deadline, stop,
-                                    country_list=True), deadline)
+                                    country_list=True, nodes=nodes), deadline)
         nodes = _wait_screen(phone, {"IDENTIFIER"}, deadline, stop)
         if not _has(nodes, "US +1"):
             raise ToolError("Amazon chưa xác nhận mã US +1")
@@ -631,7 +646,7 @@ def build_common_steps(phone: CloudPhone,
         while time.monotonic() < until:
             if screen(_read_nodes(phone, deadline, stop)) != "SMS":
                 return  # A later screenshot is needed to classify the result.
-            stop.wait(0.5)
+            stop.wait(0.25)
         raise ToolError("Đã bấm Create nhưng Amazon vẫn ở màn OTP; kiểm tra máy này")
 
     return (

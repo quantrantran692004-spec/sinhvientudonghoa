@@ -1,12 +1,13 @@
 import threading
 import unittest
+from subprocess import TimeoutExpired
 from unittest.mock import patch
 
 from amazon_android.cloud import CloudPhone
 from amazon_android.core import AMAZON_PACKAGE, ToolError
 from amazon_android.post_menu import AttemptDeadline, PostMenuSession
 from amazon_android.account_flow import (
-    _button, _find_scrolling, _national_phone, _parse_ui_nodes, _scroll_up, _unique,
+    _button, _find_scrolling, _national_phone, _parse_ui_nodes, _read_nodes, _scroll_up, _unique,
     build_common_steps, menu_layout, resume_common_index,
     route_list_menu, screen,
 )
@@ -229,7 +230,7 @@ class Q1FlowTests(unittest.TestCase):
         action = next(step.action for step in build_common_steps(
             self.phone, lambda _code: None) if step.name.startswith("b6"))
         with patch("amazon_android.account_flow._read_nodes",
-                   side_effect=[country, [hidden], [visible]]), \
+                   side_effect=[country + [hidden], [visible]]), \
              patch("amazon_android.account_flow._scroll_up") as scroll, \
              patch("amazon_android.account_flow._tap") as tap, \
              patch("amazon_android.account_flow._wait_screen",
@@ -237,6 +238,15 @@ class Q1FlowTests(unittest.TestCase):
             action(self.job, self.deadline, self.stop)
         scroll.assert_called_once()
         self.assertIs(tap.call_args.args[1], visible)
+
+    def test_reads_current_ui_again_after_adb_timeout(self):
+        error = ToolError("ADB timeout")
+        error.__cause__ = TimeoutExpired("adb", 6)
+        current = [node("United States +1")]
+        with patch("amazon_android.account_flow._read_nodes_once",
+                   side_effect=[error, current]) as read:
+            self.assertEqual(_read_nodes(self.phone, self.deadline, self.stop), current)
+        self.assertEqual(read.call_count, 2)
 
     def test_b6_long_swipe_stays_inside_country_list(self):
         region = node("", bounds="[40,120][340,720]")
@@ -248,12 +258,12 @@ class Q1FlowTests(unittest.TestCase):
         self.assertTrue(40 < int(x1) < 340)
         self.assertTrue(120 < int(y2) < int(y1) < 720)
         self.assertGreater(int(y1) - int(y2), 400)
-        self.assertLessEqual(int(duration), 120)
+        self.assertLessEqual(int(duration), 70)
 
     def test_b6_scrolls_back_if_fling_passes_us(self):
         target = node("United States +1")
         with patch("amazon_android.account_flow._read_nodes",
-                   side_effect=[[node("Afghanistan +93")],
+                   side_effect=[[node("Afghanistan +93")], [node("Japan +81")],
                                 [node("Zimbabwe +263")], [target]]), \
              patch("amazon_android.account_flow._scroll_up") as scroll, \
              patch.object(self.stop, "wait", return_value=False):
@@ -261,7 +271,8 @@ class Q1FlowTests(unittest.TestCase):
                                           self.deadline, self.stop,
                                           country_list=True), target)
         self.assertTrue(scroll.call_args_list[0].kwargs["fling"])
-        self.assertTrue(scroll.call_args_list[1].kwargs["reverse"])
+        self.assertTrue(scroll.call_args_list[1].kwargs["fling"])
+        self.assertTrue(scroll.call_args_list[2].kwargs["reverse"])
 
     def test_phone_uses_input_digits_then_checks_us_national_number(self):
         self.assertEqual(_national_phone(self.job), "2025550123")

@@ -19,6 +19,12 @@ Menu ba gạch có thêm biến thể dạng danh sách: trên các máy đã n�
 
 ## Trạng thái kiểm chứng và giới hạn
 
+- Danh sách quốc gia dài. Sau cú vuốt nhanh rồi nhả, nếu màn vẫn hiện các nước nhóm A–S, b6 tiếp tục dùng cú vuốt mạnh. Gần nhóm T/U thì cuộn có kiểm soát và cuộn ngược nếu vượt qua mục Mỹ.
+
+- Ảnh b6 mới cho thấy danh sách đã tới United States nhưng lệnh ADB hết hạn sau 6 giây. B6 dùng lại cây UI đã đọc để chọn mục đang hiện hoặc quyết định cú vuốt đầu. Nếu thao tác đọc cây UI hết hạn ở ADB, thử đọc lại một lần trong thời hạn của máy, không lặp cú vuốt hoặc bấm. Chưa có số đo trên máy thật.
+
+- Tăng lực vuốt đầu ở b6 bằng thao tác 65 ms qua 92% vùng danh sách khi cây UI cung cấp vùng cuộn. Tool đọc lại để xác nhận đúng United States +1 và cuộn ngược ngắn nếu vượt qua mục Mỹ. Giảm khoảng nghỉ cuộn thường và kiểm tra một số lần chuyển màn. Chưa đo quãng vuốt hoặc thời gian trên máy Swarmote thật.
+
 - Trình duyệt có thể khởi động trong lúc chờ SMS. Chỉ điều hướng tới URL của máy khi đủ 4 giây từ lúc bấm gửi và màn SMS đã được nhận diện. Chrome ẩn là mặc định, Edge ẩn dự phòng khi Chrome không mở hoặc không đọc được trang.
 
 - B11 mặc định đọc OTP qua Chrome ẩn và thử Edge ẩn nếu Chrome không mở hoặc không đọc được trang. Máy đích cần cài Chrome hoặc Edge và Playwright qua dependencies. Đã chạy trình duyệt ẩn thật với máy chủ thử nghiệm cục bộ, nhận phản hồi chờ rồi tải lại và tách được 6 số. Chưa xác nhận với URL APIFC của lượt SMS thật. Nếu trình duyệt ẩn không đọc được, dùng phương án mở trình duyệt thường tại Tiếp tục.
