@@ -233,8 +233,16 @@ def route_list_menu(phone: CloudPhone, steps: tuple[PostMenuStep, ...],
 
 
 def _scroll_up(phone: CloudPhone, nodes: list[dict[str, str]],
-               deadline: AttemptDeadline, *, country_list: bool = False) -> None:
+               deadline: AttemptDeadline, *, country_list: bool = False,
+               fling: bool = False, reverse: bool = False) -> None:
+    start, end, duration = (0.72, 0.32, "360")
     if country_list:
+        if fling:
+            start, end, duration = (0.94, 0.06, "100")
+        elif reverse:
+            start, end, duration = (0.35, 0.65, "320")
+        else:
+            start, end, duration = (0.88, 0.12, "270")
         scroll_regions = {_bounds(node) for node in nodes
                           if node.get("scrollable") == "true" and _visible(node)}
         if len(scroll_regions) == 1:
@@ -242,8 +250,8 @@ def _scroll_up(phone: CloudPhone, nodes: list[dict[str, str]],
             x = (left + right) // 2
             height = bottom - top
             cloud_adb(phone, "shell", "input", "swipe", str(x),
-                      str(top + int(height * 0.88)), str(x),
-                      str(top + int(height * 0.12)), "270",
+                      str(top + int(height * start)), str(x),
+                      str(top + int(height * end)), duration,
                       timeout=max(1, math.ceil(min(6, deadline.remaining()))))
             return
     dimensions = []
@@ -262,7 +270,8 @@ def _scroll_up(phone: CloudPhone, nodes: list[dict[str, str]],
         if not found:
             raise ToolError("Không xác định được kích thước màn hình máy này")
         width, height = map(int, found.groups())
-    start, end, duration = (0.84, 0.20, "270") if country_list else (0.72, 0.32, "360")
+    if fling:
+        start, end = 0.86, 0.18
     cloud_adb(phone, "shell", "input", "swipe", str(width // 2),
               str(int(height * start)), str(width // 2),
               str(int(height * end)), duration,
@@ -275,7 +284,7 @@ def _find_scrolling(phone: CloudPhone, label: str,
                     menu_action: bool = False,
                     country_list: bool = False) -> dict[str, str]:
     previous = None
-    for _ in range(30):
+    for attempt in range(30):
         nodes = _read_nodes(phone, deadline, stop)
         target = label.casefold()
         matches = [node for node in nodes if _visible(node) and
@@ -298,8 +307,13 @@ def _find_scrolling(phone: CloudPhone, label: str,
         if visible == previous:
             break
         previous = visible
-        _scroll_up(phone, nodes, deadline, country_list=country_list)
-        stop.wait(0.15 if country_list else 0.35)
+        reverse = country_list and any(text.startswith(("uruguay +", "uzbekistan +",
+                   "vanuatu +", "vietnam +", "yemen +", "zambia +", "zimbabwe +"))
+                   for text in visible)
+        fling = country_list and attempt == 0 and not reverse
+        _scroll_up(phone, nodes, deadline, country_list=country_list,
+                   fling=fling, reverse=reverse)
+        stop.wait(0.45 if fling else 0.15 if country_list else 0.35)
     raise ToolError(f"Không tìm thấy '{label}' sau khi cuộn máy này")
 
 

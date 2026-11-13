@@ -19,6 +19,8 @@ Menu ba gạch có thêm biến thể dạng danh sách: trên các máy đã n�
 
 ## Trạng thái kiểm chứng và giới hạn
 
+- B6 dùng một cú vuốt dài và nhanh hướng về cuối danh sách quốc gia, sau đó đọc lại để tìm `United States +1`. Nếu thấy các mục sau Mỹ mà chưa thấy mục cần chọn, tool vuốt ngược ngắn để tìm lại. Áp dụng cho luồng chung. Chưa đo khoảng cuộn thực tế trên Swarmote.
+
 - Luồng SMS dùng chung đợi đủ 4 giây tính từ lúc bấm gửi rồi mới đọc URL OTP. Thời gian chuyển màn được tính vào 4 giây. Nếu người dùng đã gửi tay, tính từ lúc tool nhận ra màn SMS lần đầu. Mỗi lần thử gọi lại URL với yêu cầu kiểm tra lại bộ nhớ đệm. 133 bài kiểm tra đã qua, gồm kiểm tra thời gian chờ còn lại. Chưa xác minh với URL thật.
 
 - Báo cáo mới trên q1 cho thấy b6 cuộn chậm, b9 báo nhiều Continue và b11 nhận HTTP 403 dù Amazon đã xác nhận gửi SMS. Sửa trong `build_common_steps` cho mọi máy. B6 vuốt dài trong vùng danh sách khi nhận diện được và chỉ bấm đúng `United States +1`. B9 gộp các vùng Continue lồng nhau và dùng lại cây UI đã xác nhận ô tên. Giảm khoảng chờ giữa các lần kiểm tra màn. B11 báo rõ lỗi URL OTP và vẫn cho tiếp tục từ mã nhập tay. 133 bài kiểm tra đã qua. `cloud-scan` chưa thấy ADB nên chưa đo tốc độ hay kiểm chứng cây UI thật.

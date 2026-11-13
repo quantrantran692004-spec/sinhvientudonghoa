@@ -202,13 +202,26 @@ class Q1FlowTests(unittest.TestCase):
         region = node("", bounds="[40,120][340,720]")
         region["scrollable"] = "true"
         with patch("amazon_android.account_flow.cloud_adb") as adb:
-            _scroll_up(self.phone, [region], self.deadline, country_list=True)
+            _scroll_up(self.phone, [region], self.deadline, country_list=True, fling=True)
         _, _, _, _, x1, y1, x2, y2, duration = adb.call_args.args
         self.assertEqual(x1, x2)
         self.assertTrue(40 < int(x1) < 340)
         self.assertTrue(120 < int(y2) < int(y1) < 720)
         self.assertGreater(int(y1) - int(y2), 400)
-        self.assertLess(int(duration), 360)
+        self.assertLessEqual(int(duration), 120)
+
+    def test_b6_scrolls_back_if_fling_passes_us(self):
+        target = node("United States +1")
+        with patch("amazon_android.account_flow._read_nodes",
+                   side_effect=[[node("Afghanistan +93")],
+                                [node("Zimbabwe +263")], [target]]), \
+             patch("amazon_android.account_flow._scroll_up") as scroll, \
+             patch.object(self.stop, "wait", return_value=False):
+            self.assertIs(_find_scrolling(self.phone, "United States +1",
+                                          self.deadline, self.stop,
+                                          country_list=True), target)
+        self.assertTrue(scroll.call_args_list[0].kwargs["fling"])
+        self.assertTrue(scroll.call_args_list[1].kwargs["reverse"])
 
     def test_phone_uses_input_digits_then_checks_us_national_number(self):
         self.assertEqual(_national_phone(self.job), "2025550123")
