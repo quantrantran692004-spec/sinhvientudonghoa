@@ -1,8 +1,7 @@
 """Read one profile's Amazon SMS code from its assigned APIFC URL.
 
-The registration runner will call ``read_otp`` before requesting a new code
-and ``wait_for_new_otp`` immediately afterwards. URLs and SMS bodies are never
-included in errors.
+The account flow reads this URL only after it has sent SMS and confirmed the
+SMS entry screen. URLs and SMS bodies are never included in errors.
 """
 from __future__ import annotations
 
@@ -81,7 +80,7 @@ def read_otp(url: str, *, timeout: float = 5) -> str | None:
 def wait_for_new_otp(url: str, previous_code: str | None, *,
                      timeout: float = 30, interval: float = 1,
                      stop: threading.Event | None = None) -> str:
-    """Poll one URL until the code differs from the pre-send baseline."""
+    """Poll one profile URL for a code after SMS was requested."""
     validate_otp_url(url)
     if timeout <= 0 or interval <= 0:
         raise ValueError("OTP timeout and interval must be positive")

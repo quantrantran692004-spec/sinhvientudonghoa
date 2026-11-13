@@ -1,5 +1,11 @@
 # Biên bản kiểm tra thực tế — 2026-11-12
 
+## Sáu ảnh q1 mới: b6, b9, b10 — 2026-11-13
+
+- Ảnh cho thấy dropdown quốc gia ở đầu chữ A khi b6 báo bounds lỗi; form b9 có bàn phím và một Continue thấy được; b10 báo URL HTTP 403 trong khi màn vẫn là WhatsApp, nút Send code by SMS chưa bấm. Lưu ảnh gốc ở `flow_images/q1/latest_errors/`.
+- Mã nguồn hiện tại lọc vùng bấm hợp lệ trước khi mở dropdown, cuộn tới mục US +1 hiện ra; b9 chọn nút Continue đang thấy và dưới ô tên; b10 bấm SMS rồi xác nhận màn SMS, URL chỉ được đọc tại b11. Hai test hồi quy mới kiểm tra b6 cuộn từ đầu danh sách và thứ tự b10. `128/128` unittest PASS.
+- `cloud-scan` không tìm được ADB Swarmote/Android SDK trong môi trường này. Chưa đọc UI q1 thật, chưa kiểm chứng tiến trình tool hiện trên màn đã nạp mã mới. Không khởi động lại tool vì dữ liệu mẻ chỉ ở RAM.
+
 ## Menu ba gạch dạng danh sách — 2026-11-13
 
 - Người dùng gửi ảnh menu dạng danh sách chữ và xác nhận thao tác: bấm Home, chỉ xem 2–5 giây, quay về menu, bấm Sign In ở b4. Ảnh được lưu ở `flow_images/shared/01_list_menu.png`.

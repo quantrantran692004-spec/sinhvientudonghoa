@@ -24,3 +24,5 @@ Từ **b4 Sign In** ở menu ba gạch: nhập số của đúng hàng, chọn `
 4. Báo riêng kết quả test mô phỏng và kết quả máy thật. Không dùng “đã tạo tài khoản thành công” khi chỉ thấy bấm Create hoặc rời màn OTP.
 
 Mười sáu ảnh q1/q2 và một ảnh menu chung đã được lưu và ánh xạ tới bước trong [IMAGE_EVIDENCE.md](IMAGE_EVIDENCE.md). Graphify hiện chỉ lập chỉ mục tiêu đề/link, không trích xuất pixel; phải mở ảnh khi phân tích chi tiết. File này vẫn chỉ ghi **nội dung đã được người dùng hướng dẫn**, không khẳng định ảnh đã đủ toàn bộ quy trình.
+
+Người dùng gửi thêm sáu ảnh q1: dropdown quốc gia ở đầu chữ A lúc báo lỗi b6, form tên đang mở bàn phím lúc báo nhiều Continue ở b9, và màn WhatsApp chưa bấm SMS lúc tool báo HTTP 403 ở b10. Bản mã hiện tại đã có lọc bounds cho b6, lọc nút Continue nhìn thấy ở b9 và chỉ đọc URL ở b11. Có test hồi quy mới, nhưng **chưa xác minh tiến trình tool trên màn đang nạp bản mã này**; không tự khởi động lại vì dữ liệu mẻ chỉ ở RAM.

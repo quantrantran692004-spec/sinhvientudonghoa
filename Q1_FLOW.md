@@ -25,6 +25,8 @@ Mỗi mốc là bước có thể tiếp tục lại: trước khi bấm, đọc
 
 Ngày 13/11/2026, người dùng gửi thêm năm ảnh q1: màn SĐT đang trống, lỗi vùng bấm ở b6, hai `Continue` ở b9, HTTP 403 ở b10 và b10 không còn ở màn chọn SMS. q1 hiện ở màn nhập SĐT theo xác nhận của người dùng. Mã chung b4–b11 đã sửa để Tiếp tục đọc lại màn và quay về b4 nếu cần; không xóa hàng q1. Những sửa này đã qua test mô phỏng, **chưa được thử lại trên Swarmote thật**. Ảnh được lưu tại [IMAGE_EVIDENCE.md](IMAGE_EVIDENCE.md). Riêng b1–b3 của q1 không đổi.
 
+Sáu ảnh q1 mới cho thấy dropdown b6 vẫn ở đầu chữ A lúc báo lỗi, form b9 có một Continue nhìn thấy dưới ô tên và màn b10 vẫn là WhatsApp khi tool báo HTTP 403. Mã hiện tại cuộn tới US +1 có bounds hợp lệ, chọn Continue hiện/có thể bấm bên dưới ô tên và chỉ đọc URL tại b11 sau khi đã bấm SMS. Đã thêm test hồi quy b6 và thứ tự b10; chưa xác nhận phiên tool trên màn đã nạp mã hiện tại, và không đóng phiên vì dữ liệu chỉ ở RAM. Xem [IMAGE_EVIDENCE.md](IMAGE_EVIDENCE.md).
+
 Thời hạn q1 là một đồng hồ chung từ menu tới **ô OTP SMS đã nhập đúng**, không phải 11 đồng hồ độc lập. Các lần chờ chuyển màn thông thường tối đa khoảng 10 giây; tìm mục bằng cuộn có giới hạn số lần; chờ SMS tối đa 30 giây. Mỗi thao tác còn bị chặn bởi thời gian thực tế còn lại của lượt, nên phần nào xong nhanh sẽ dành thời gian cho phần sau. Sau khi nhập đúng OTP, lần bấm Create có khoảng chờ riêng để kiểm tra Amazon đã rời màn OTP.
 
 Quy tắc cho q2–q12: chỉ b1–b3 có thao tác riêng theo máy. b4–b11 dùng chung `build_common_steps` trong `account_flow.py`, nhưng mỗi máy khởi tạo hàm này riêng để giữ SĐT, URL OTP, mã, trạng thái gửi SMS và đồng hồ độc lập. q2 đã có b1–b3 riêng; q3–q12 chưa được bật sau menu vì chưa có hướng dẫn. Không sao chép tọa độ ảnh giữa các máy.

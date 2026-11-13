@@ -74,6 +74,8 @@ Gõ nguyên chuỗi SĐT của đúng hàng từng ký tự vào ô `Enter mobil
 
 Sau khi gõ số, mở Country/region code, cuộn tới gần cuối tìm United States +1, chọn và đọc lại số/mã quốc gia. Không bấm mục US ẩn có vùng `[0,0][0,0]`; tiếp tục cuộn đến mục đang hiển thị và có vùng bấm hợp lệ. Ảnh b6 ban đầu có tiêu đề cửa sổ q6, chỉ là tham chiếu UI. q1 đã báo lỗi vùng bấm b6; **đã sửa mã chung, chưa xác minh lại trên máy thật.**
 
+Sáu ảnh q1 mới ngày 13/11 cho thấy dropdown vẫn ở chữ A khi báo lỗi. Mã hiện tại lọc cả ô mở mã quốc gia bị ẩn, và chỉ bấm mục US +1 có bounds hợp lệ sau khi cuộn. Có test hồi quy cho trạng thái danh sách đang ở đầu. Chưa xác nhận phiên tool trên màn đã nạp mã này.
+
 ## Chung b7 — Continue số điện thoại
 
 Chỉ bấm Continue khi form và số US +1 khớp hàng của máy. Nếu chuyển sang màn đăng nhập cũ hoặc màn lạ, dừng. **Đã nối mã; chưa thử thật.**
@@ -89,6 +91,8 @@ Trên form Create account, gõ `First and last name` từ đúng hàng từng k�
 ## Chung b10 — Chuyển WhatsApp sang SMS
 
 Ở màn Verify with WhatsApp, xác nhận đúng SĐT, bấm `Send code by SMS` một lần và chờ màn SMS. **Chỉ sau khi gửi mới đọc URL OTP** của đúng hàng. Nếu người dùng đã bấm gửi và đang ở màn SMS khi Tiếp tục, nhận màn đó mà không bấm gửi lặp. HTTP 403 trước khi gửi không được chặn thao tác gửi nữa; HTTP 403 kéo dài sau khi gửi làm máy dừng tại b11. **Đã sửa mã chung theo ảnh lỗi q1; chưa xác minh lại trên máy thật.**
+
+Ảnh mới cho thấy báo HTTP 403 ở b10 trong khi màn còn WhatsApp. Mã nguồn hiện tại không gọi URL tại b10; test hồi quy xác nhận thứ tự bấm SMS → xác nhận màn SMS → đọc URL tại b11. Đây là dấu hiệu phiên tool trên màn có thể đang chạy mã cũ, chưa có bằng chứng phiên hiện tại đã nạp bản mới.
 
 ## Chung b11a — Lấy và gõ OTP SMS
 

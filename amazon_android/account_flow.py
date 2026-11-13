@@ -406,7 +406,7 @@ def build_common_steps(phone: CloudPhone,
         if screen(nodes) == "IDENTIFIER":
             if _has(nodes, "US +1"):
                 return
-            candidates = [node for node in nodes if re.fullmatch(
+            candidates = [node for node in nodes if _visible(node) and re.fullmatch(
                 r"[a-z]{2}\s*\+\d+", _text(node))]
             if len(candidates) != 1:
                 raise ToolError("Không xác định được ô chọn mã quốc gia")

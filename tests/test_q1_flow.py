@@ -139,6 +139,24 @@ class Q1FlowTests(unittest.TestCase):
         self.assertIs(result, visible)
         scroll.assert_called_once()
 
+    def test_b6_open_country_list_scrolls_before_tapping_us(self):
+        country = [node("Country/region code")]
+        hidden = node("United States +1", bounds="[0,0][0,0]")
+        visible = node("United States +1", bounds="[50,320][320,360]")
+        confirmed = [node("Sign in or create account"),
+                     node("Enter mobile number or email"), node("US +1")]
+        action = next(step.action for step in build_common_steps(
+            self.phone, lambda _code: None) if step.name.startswith("b6"))
+        with patch("amazon_android.account_flow._read_nodes",
+                   side_effect=[country, [hidden], [visible]]), \
+             patch("amazon_android.account_flow._scroll_up") as scroll, \
+             patch("amazon_android.account_flow._tap") as tap, \
+             patch("amazon_android.account_flow._wait_screen",
+                   return_value=confirmed):
+            action(self.job, self.deadline, self.stop)
+        scroll.assert_called_once()
+        self.assertIs(tap.call_args.args[1], visible)
+
     def test_phone_uses_input_digits_then_checks_us_national_number(self):
         self.assertEqual(_national_phone(self.job), "2025550123")
 
@@ -193,6 +211,28 @@ class Q1FlowTests(unittest.TestCase):
             first_send(self.job, self.deadline, self.stop)
             second_send(second, self.deadline, self.stop)
         self.assertEqual(tap.call_count, 2)
+
+    def test_b10_taps_sms_and_confirms_sms_screen_before_any_url_read(self):
+        statuses = []
+        action = next(step.action for step in build_common_steps(
+            self.phone, lambda _code: None, statuses.append)
+            if step.name.startswith("b10"))
+        whatsapp = [node("Verify with WhatsApp"), node("Send code by SMS")]
+        sms = [node("Verify mobile number"), node("Enter security code")]
+        order = []
+        with patch("amazon_android.account_flow._read_nodes",
+                   return_value=whatsapp), \
+             patch("amazon_android.account_flow._check_summary"), \
+             patch("amazon_android.account_flow._tap",
+                   side_effect=lambda *_: order.append("tap SMS")), \
+             patch("amazon_android.account_flow._wait_screen",
+                   side_effect=lambda *_args, **_kwargs:
+                       (order.append("SMS screen") or sms)), \
+             patch("amazon_android.account_flow.wait_for_new_otp") as read:
+            action(self.job, self.deadline, self.stop)
+        self.assertEqual(order, ["tap SMS", "SMS screen"])
+        self.assertEqual(statuses, ["Đang chờ mã"])
+        read.assert_not_called()
 
     def test_sms_is_not_sent_twice_after_uncertain_transition(self):
         steps = build_q1_steps(self.phone, lambda code: None)

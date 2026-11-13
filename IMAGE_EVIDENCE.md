@@ -70,4 +70,13 @@ Các ảnh người dùng gửi đã được sao chép vào `flow_images/` đ�
 
 [01_list_menu.png](flow_images/shared/01_list_menu.png): biến thể menu ba gạch gồm `Shop by Category`, các hàng danh mục và `Sign In`. Người dùng yêu cầu bấm Home, chỉ xem 2–5 giây, quay về menu rồi làm b4 Sign In. Bộ phân loại xử lý theo cây UI đang hiển thị, không phụ thuộc ảnh này; xem [MENU_ROUTING.md](MENU_ROUTING.md).
 
+## q1 ảnh lỗi mới 01–06 — b6, b9, b10
+
+- [01_b6_error.png](flow_images/q1/latest_errors/01_b6_error.png): lỗi vùng bấm ở b6.
+- [02_country_open.png](flow_images/q1/latest_errors/02_country_open.png): danh sách quốc gia còn ở đầu chữ A; phải cuộn tới United States +1 đang hiện và có bounds hợp lệ.
+- [03_b9_error.png](flow_images/q1/latest_errors/03_b9_error.png): thông báo nhiều `Continue` ở b9.
+- [04_name_form.png](flow_images/q1/latest_errors/04_name_form.png): form tên có bàn phím mở và một nút Continue nhìn thấy dưới ô tên.
+- [05_b10_error.png](flow_images/q1/latest_errors/05_b10_error.png): thông báo URL OTP HTTP 403 khi tool ghi b10.
+- [06_whatsapp.png](flow_images/q1/latest_errors/06_whatsapp.png): màn vẫn là Verify with WhatsApp, nút Send code by SMS chưa được bấm. Ảnh này cho thấy bản đang chạy đã đọc URL trước khi gửi SMS; mã nguồn hiện tại đọc URL ở b11 sau khi xác nhận màn SMS. Chưa kiểm chứng phiên tool đang chạy nạp phiên bản mã nào.
+
 Ảnh tiếp theo của người dùng chưa có trong danh mục này. Khi nhận ảnh mới, lưu tên theo máy và thứ tự, cập nhật `STEP_INVENTORY.md`, file Qn tương ứng, `PROJECT_HANDOFF.md` rồi cập nhật Graphify.
