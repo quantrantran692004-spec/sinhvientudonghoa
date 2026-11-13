@@ -19,6 +19,8 @@ Menu ba gạch có thêm biến thể dạng danh sách: trên các máy đã n�
 
 ## Trạng thái kiểm chứng và giới hạn
 
+- B11a chạm ô OTP ngay khi nhận ra màn SMS và xác nhận đúng SĐT. Khi nhận được mã, b11 đọc lại màn, xác nhận đúng SĐT và kiểm tra focus trước khi gõ. Test mô phỏng bao gồm trường hợp nguồn mã lỗi sau khi ô đã được chạm và ô mất focus trong lúc chờ mã. 145 bài test đạt. Ảnh q1 báo đúng chuỗi lỗi 403 của bộ đọc HTTP cũ, đã bỏ khỏi luồng mặc định tại `07ab6d1`. Chưa đọc được q1 thật vì phiên kiểm tra không thấy ADB.
+
 - B9 gặp nhiều Continue khi bàn phím mở. Bộ chọn nhận cả text và content-desc, giữ node nút gốc. Nếu vẫn chưa chọn được, kiểm tra Android có bàn phím đang hiện, đóng bàn phím một lần, đọc lại form, xác nhận SĐT và tên rồi mới bấm Continue. Chưa đối chiếu cây UI của q1 thật vì không thấy ADB trong phiên kiểm tra.
 
 - Ảnh q1 mới cho thấy form tạo tài khoản đã hiện dù b8 báo chưa nhận diện được màn. Bộ nhận diện chung đọc cả `text` và `content-desc`, chấp nhận tiêu đề biến thể và dùng nhãn tên hoặc tiêu đề cùng Mobile number, Continue và một ô nhập hiện hữu. Khi b8 đọc được form đã mở, chuyển sang b9 mà không bấm lại. Mô phỏng đã kiểm tra các biến thể và trường hợp mơ hồ. Chưa đọc được cây UI q1 thật vì không thấy ADB Swarmote.

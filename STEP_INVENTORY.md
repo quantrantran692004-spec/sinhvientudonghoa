@@ -104,11 +104,13 @@ Trên form Create account, gõ `First and last name` từ đúng hàng từng k�
 
 Ảnh mới cho thấy báo HTTP 403 ở b10 trong khi màn còn WhatsApp. Mã nguồn hiện tại không gọi URL tại b10; test hồi quy xác nhận thứ tự bấm SMS → xác nhận màn SMS → đọc URL tại b11. Đây là dấu hiệu phiên tool trên màn có thể đang chạy mã cũ, chưa có bằng chứng phiên hiện tại đã nạp bản mới.
 
-## Chung b11a — Lấy và gõ OTP SMS
+## Chung b11a — Chạm ô OTP trên màn SMS
 
-Ảnh mới xác nhận Amazon đã gửi SMS nhưng URL OTP trả HTTP 403. B11 báo lỗi đọc mã thay cho trạng thái đang chờ. Nếu có mã SMS hợp lệ, nhập vào ô Amazon rồi bấm Tiếp tục tại hàng máy đó. HTTP 403 kéo dài cần kiểm tra với bên cấp URL OTP.
+Xác nhận màn SMS và đúng SĐT của hàng, sau đó chạm vào ô `Enter security code` nếu ô chưa có đủ sáu số. Bước này chạy trước khi đọc URL OTP nên lỗi nguồn mã không chặn thao tác chạm ô.
 
-Chờ phản hồi `yes|Amazon: 123456 is your sign-in code.` trên URL riêng sau khi gửi SMS, lấy đúng sáu số, gõ từng số vào `Enter security code` và đọc lại. Nếu URL tạm trả HTTP 403, tiếp tục chờ trong giới hạn; nếu vẫn 403 thì dừng để kiểm tra URL của hàng. Phản hồi chỉ có mã, không có dấu thời gian nên chưa thể chứng minh mã là mới khi URL từng có mã cũ. Đồng hồ lượt của máy kết thúc khi ô đúng. **Đã sửa mã và test mô phỏng; chưa thử thật sau sửa.**
+## Chung b11 — Lấy và gõ OTP SMS
+
+Sau mốc 4 giây từ lúc gửi, đọc URL đúng hàng bằng Chrome ẩn hoặc Edge ẩn. Khi có mã, đọc lại màn SMS và xác nhận SĐT. Nếu Android báo ô mất focus, chạm lại trước khi gõ từng số. Đọc lại nội dung đã gõ. Nếu trình duyệt ẩn không đọc được, bấm Tiếp tục ở đúng hàng để mở trình duyệt thường hoặc nhập mã trên Amazon. Phản hồi chỉ có mã, không có dấu thời gian để phân biệt mã cũ. **Đã test mô phỏng; chưa thử thật sau sửa.**
 
 ## Chung b11b — Bấm Create your Amazon account
 

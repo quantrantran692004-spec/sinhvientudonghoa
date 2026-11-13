@@ -452,7 +452,7 @@ class Q1FlowTests(unittest.TestCase):
         enter_otp = next(step.action for step in steps if step.name == "b11 nhập OTP")
         whatsapp = [node("Verify with WhatsApp"), node("Send code by SMS")]
         sms = [node("Verify mobile number"), node("Enter security code"),
-               node("Create your Amazon account")]
+               node("Create your Amazon account"), node(self.job.account.phone)]
         with patch("amazon_android.account_flow._read_nodes",
                    side_effect=[whatsapp, sms]), \
              patch("amazon_android.account_flow.time.monotonic",
@@ -475,6 +475,49 @@ class Q1FlowTests(unittest.TestCase):
         self.assertEqual(wait.call_args.args[:2],
                          (self.job.account.otp_url, None))
         self.assertEqual(typed.call_args.args[2], "222222")
+
+    def test_b11_taps_otp_field_even_when_provider_read_fails(self):
+        field = node("", kind="android.widget.EditText", bounds="[30,210][350,250]")
+        sms = [node("Verify mobile number"), node("Enter security code"),
+               node(self.job.account.phone), field]
+        steps = {step.name: step.action for step in build_common_steps(self.phone, lambda _: None)}
+        actions = []
+
+        def provider_read(*_args, **_kwargs):
+            actions.append("read")
+            raise ToolError("Provider unavailable")
+
+        with patch("amazon_android.account_flow._read_nodes", return_value=sms), \
+             patch("amazon_android.account_flow._tap",
+                   side_effect=lambda _phone, target, _deadline: actions.append(target)), \
+             patch("amazon_android.account_flow.wait_for_new_otp", side_effect=provider_read), \
+             patch("amazon_android.account_flow.type_characters") as typed:
+            steps["b10 Send code by SMS"](self.job, self.deadline, self.stop)
+            steps["b11a chạm ô OTP"](self.job, self.deadline, self.stop)
+            with self.assertRaisesRegex(ToolError, "Provider unavailable"):
+                steps["b11 nhập OTP"](self.job, self.deadline, self.stop)
+        self.assertEqual(actions, [field, "read"])
+        typed.assert_not_called()
+
+    def test_b11_restores_otp_focus_after_browser_returns(self):
+        field = dict(node("", kind="android.widget.EditText", bounds="[30,210][350,250]"),
+                     focused="false")
+        focused = dict(field, focused="true")
+        filled = dict(focused, text="222222")
+        heading = [node("Verify mobile number"), node("Enter security code"),
+                   node(self.job.account.phone)]
+        steps = {step.name: step.action for step in build_common_steps(self.phone, lambda _: None)}
+        actions = []
+        with patch("amazon_android.account_flow._read_nodes", side_effect=[
+                heading + [field], heading + [focused], heading + [field],
+                heading + [field], heading + [focused], heading + [filled]]), \
+             patch("amazon_android.account_flow._tap", side_effect=lambda *_: actions.append("tap")), \
+             patch("amazon_android.account_flow.wait_for_new_otp", return_value="222222"), \
+             patch("amazon_android.account_flow.type_characters",
+                   side_effect=lambda _phone, value, *_: actions.append(value)):
+            steps["b10 Send code by SMS"](self.job, self.deadline, self.stop)
+            steps["b11 nhập OTP"](self.job, self.deadline, self.stop)
+        self.assertEqual(actions, ["tap", "tap", "222222"])
 
     def test_create_is_not_pressed_twice_after_screen_changes(self):
         create = build_q1_steps(self.phone, lambda code: None)[-1].action

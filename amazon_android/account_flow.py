@@ -27,6 +27,7 @@ UI_PATH = "/sdcard/amazon_tool_post_menu.xml"
 SIZE = re.compile(r"(?:Physical|Override) size:\s*(\d+)x(\d+)")
 PHONE_FIELD = "Enter mobile number or email"
 NAME_FIELD = "First and last name"
+OTP_FIELD = "Enter security code"
 
 
 def _text(node: dict[str, str]) -> str:
@@ -426,18 +427,22 @@ def _type_field(phone: CloudPhone, label: str, value: str,
         return nodes
     if current and not value.startswith(current):
         raise ToolError(f"Ô '{label}' khác dữ liệu của máy này; sửa trực tiếp rồi Tiếp tục")
-    if label != PHONE_FIELD or field.get("focused") != "true":
+    check_focus = label in {PHONE_FIELD, OTP_FIELD}
+    if not check_focus or field.get("focused") != "true":
         _tap(phone, field, deadline)
-    if label == PHONE_FIELD and field.get("focused") == "false":
+    if check_focus and field.get("focused") == "false":
         active_field = _field(_read_nodes(phone, deadline, stop), label)
         if active_field.get("focused") == "false":
             _tap(phone, active_field, deadline)
             active_field = _field(_read_nodes(phone, deadline, stop), label)
         if active_field.get("focused") == "false":
-            raise ToolError("Ô SĐT chưa nhận focus. Chạm ô trên Amazon rồi bấm Tiếp tục")
+            raise ToolError(f"Ô '{label}' chưa nhận focus. Chạm ô trên Amazon rồi bấm Tiếp tục")
+        current = active_field.get("text", "")
+        if current and not value.startswith(current):
+            raise ToolError(f"Ô '{label}' khác dữ liệu của máy này; sửa trực tiếp rồi Tiếp tục")
     type_characters(phone, value[len(current):], deadline, stop)
     # Android can expose an intermediate IME value after the last keystroke.
-    attempts = 3 if label == NAME_FIELD else 1
+    attempts = 3 if label in {NAME_FIELD, OTP_FIELD} else 1
     for attempt in range(attempts):
         if attempt and stop.wait(deadline.allowance(0.15)):
             raise ToolError("Đã dừng máy này")
@@ -629,12 +634,24 @@ def build_common_steps(phone: CloudPhone,
         on_status("Đang chờ mã")
         _wait_screen(phone, {"SMS"}, deadline, stop)
 
-    def enter_otp(job: RunJob, deadline: AttemptDeadline,
-                  stop: threading.Event) -> None:
+    def read_sms_form(job: RunJob, deadline: AttemptDeadline,
+                      stop: threading.Event) -> list[dict[str, str]]:
         nodes = _read_nodes(phone, deadline, stop)
         if screen(nodes) != "SMS" or job.account is None:
             raise ToolError("Máy này chưa ở màn nhập mã SMS")
-        current = _field(nodes, "Enter security code").get("text", "")
+        _check_summary(nodes, job)
+        return nodes
+
+    def focus_otp(job: RunJob, deadline: AttemptDeadline,
+                  stop: threading.Event) -> None:
+        field = _field(read_sms_form(job, deadline, stop), OTP_FIELD)
+        if not re.fullmatch(r"[0-9]{6}", field.get("text", "")):
+            _tap(phone, field, deadline)
+
+    def enter_otp(job: RunJob, deadline: AttemptDeadline,
+                  stop: threading.Event) -> None:
+        nodes = read_sms_form(job, deadline, stop)
+        current = _field(nodes, OTP_FIELD).get("text", "")
         if re.fullmatch(r"[0-9]{6}", current):
             state.code = current
             on_otp(current)
@@ -642,8 +659,6 @@ def build_common_steps(phone: CloudPhone,
             return
         if state.sms_requested_at is None:
             raise ToolError("Chưa xác nhận được lần gửi SMS; sửa mã trên máy rồi Tiếp tục")
-        if job.account.browser_otp:
-            _check_summary(nodes, job)
         try:
             code = state.code or job.account.browser_otp or wait_for_new_otp(
                 job.account.otp_url, None,
@@ -652,7 +667,8 @@ def build_common_steps(phone: CloudPhone,
         except ToolError:
             on_status("Không đọc được mã SMS")
             raise
-        _type_field(phone, "Enter security code", code, deadline, stop)
+        _type_field(phone, OTP_FIELD, code, deadline, stop,
+                    nodes=read_sms_form(job, deadline, stop))
         state.code = code
         on_otp(code)
         on_status("Đã nhập mã")
@@ -664,7 +680,7 @@ def build_common_steps(phone: CloudPhone,
             return
         if screen(nodes) != "SMS":
             raise ToolError("Máy này không còn ở màn SMS; kiểm tra trước khi tạo tài khoản")
-        value = _field(nodes, "Enter security code").get("text", "")
+        value = _field(nodes, OTP_FIELD).get("text", "")
         if not re.fullmatch(r"[0-9]{6}", value):
             raise ToolError("Máy này chưa nhập đủ OTP để tạo tài khoản")
         if not state.create_pressed:
@@ -686,6 +702,7 @@ def build_common_steps(phone: CloudPhone,
         PostMenuStep("b8 Proceed to create an account", proceed),
         PostMenuStep("b9 nhập tên", name),
         PostMenuStep("b10 Send code by SMS", send_sms),
+        PostMenuStep("b11a chạm ô OTP", focus_otp),
         PostMenuStep("b11 nhập OTP", enter_otp),
         PostMenuStep("b11 bấm Create your Amazon account", create_account,
                      within_attempt=False),
