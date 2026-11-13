@@ -73,7 +73,9 @@ def _prepare_phone(job: RunJob, name: str, device_id: str,
         if menu_ready is not None:
             menu_ready(job.index, name, device_id, phone.serial)
         registry.mark(job.batch_id, job.index, "DONE", stage="MENU_OPEN")
-        emit(job.index, f"Đã mở menu ba gạch · {name}", "done", name)
+        message = (f"Đã mở menu ba gạch · {name}" if job.account is not None
+                   else f"Đã mở menu ba gạch · {name}; chưa có dữ liệu Amazon")
+        emit(job.index, message, "done", name)
         return "done"
     except Exception as exc:
         registry.mark(job.batch_id, job.index, "ERROR",
@@ -242,10 +244,20 @@ def run_batch(jobs: list[RunJob], registry: ProfileRegistry,
                 if not device_id or found["state"] not in {"Offline", "Running"}:
                     raise ToolError(f"{name}: chưa xác nhận Device ID hoặc trạng thái Profile")
                 if item["stage"] == "MENU_OPEN":
-                    emit(job.index, f"Đã mở menu ba gạch · {name}", "done", name)
+                    if found["state"] != "Running":
+                        emit(job.index,
+                             f"{name} đã tới menu nhưng đang Offline; Start máy rồi bấm Tiếp tục",
+                             "stopped", name)
+                        summary["stopped"] += 1
+                        continue
+                    active[name] = {"device_id": device_id, "seen_running": True}
+                    if menu_ready is not None and job.account is not None:
+                        shell = open_adb_shell(name, device_id)
+                        menu_ready(job.index, name, device_id, shell["serial"])
+                    message = (f"Đã mở menu ba gạch · {name}" if job.account is not None
+                               else f"Đã mở menu ba gạch · {name}; chưa có dữ liệu Amazon")
+                    emit(job.index, message, "done", name)
                     summary["menu_open"] += 1
-                    if found["state"] == "Running":
-                        active[name] = {"device_id": device_id, "seen_running": True}
                     continue
                 emit(job.index, f"Đã xác nhận Profile {name}", "created", name)
                 if found["state"] == "Running":

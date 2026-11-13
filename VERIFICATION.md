@@ -116,3 +116,9 @@ Trên `Amazon 01`, công cụ mở ADB Shell bằng UIA nền, xác nhận Andro
 - Đã sửa `account_flow.py` dùng chung cho mọi máy: chạm ô ở b4; cuộn qua mục quốc gia ẩn/không có bounds; lọc nút Continue đang hiển thị và có thể bấm; bấm gửi SMS rồi mới đọc URL. Tiếp tục có thể quay về b4 từ màn SĐT mà không xóa hàng dữ liệu. Màn SMS đã được người dùng mở thủ công được nhận mà không bấm gửi lần hai.
 - `otp.py` thử lại HTTP 403 trong giới hạn chờ sau khi SMS được gửi. Nếu kéo dài, dừng tại b11 để kiểm tra link của đúng hàng. Vì APIFC chỉ trả nội dung SMS và không có dấu thời gian, lần đầu sau gửi chưa thể chứng minh mã khác mã cũ nếu không đọc trước.
 - PASS mô phỏng: `118/118` unittest. Lệnh `python -m amazon_android.cli cloud-scan` trong môi trường này báo không tìm thấy ADB Swarmote/Android SDK; chưa thử lại trên q1/q2 thật, chưa gọi URL OTP thật và chưa xác minh màn sau Create.
+
+## q2 đứng ở menu ba gạch — 13/11/2026
+
+- Người dùng báo q2 đã tới menu ba gạch rồi đứng; tool chỉ ghi đã tới menu, không có lỗi. Chưa nhận được ảnh trạng thái chi tiết hoặc xác nhận nút khởi chạy, nên không khẳng định một nguyên nhân duy nhất.
+- Phát hiện nhánh `run_batch` với registry đã có `MENU_OPEN` phát `done` nhưng không gọi `menu_ready`, khiến desktop thiếu ADB serial và bỏ qua `_start_post_menu`. Đã sửa để nối lại đúng serial q2 Running trước khi phát `done`. Khi q2 Offline, báo Start máy rồi Tiếp tục. Khi thiếu hàng Amazon hoặc serial, desktop hiện rõ lý do tại hàng Máy 2.
+- PASS mô phỏng: `122/122` unittest, gồm kiểm tra q2 đã có `MENU_OPEN` nhận đúng ADB serial trước `done`, q2 Offline không báo chạy tiếp, và hai trường hợp thiếu serial/dữ liệu không dừng im lặng. **Chưa thử lại trên q2 thật** vì môi trường phiên này không tìm thấy ADB Swarmote/Android SDK.

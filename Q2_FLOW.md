@@ -10,3 +10,5 @@ Nguồn: hai ảnh người dùng gửi ngày 13/11/2026. q2 bắt đầu ở me
 | b4–b11 | Luồng chung: Sign In, nhập số, US +1, tạo tài khoản, chọn SMS, lấy OTP từ URL cùng hàng, nhập OTP, bấm Create. | Xem [Q1_FLOW.md](Q1_FLOW.md) và [POST_MENU_REQUIREMENTS.md](POST_MENU_REQUIREMENTS.md). |
 
 Nếu màn hình khác ảnh hoặc phần tử không xác định duy nhất, q2 dừng tại bước hiện tại để người dùng sửa rồi bấm **Tiếp tục**. Đồng hồ riêng của q2 bắt đầu từ menu ba gạch, chu kỳ 3–4–5–4 phút. Chưa thử b1–b11 trên q2 thật; ảnh không xác nhận màn sau Create.
+
+Người dùng báo q2 đã tới menu ba gạch rồi đứng; trạng thái trong tool chỉ ghi đã tới menu, không có lỗi. Khi một mẻ cũ đã lưu `MENU_OPEN`, runner trước đây phát sự kiện `done` nhưng không nối lại ADB serial, làm `_start_post_menu` bỏ qua b1. Nhánh này đã được sửa: q2 Running có dữ liệu Amazon sẽ nối ADB trước khi chạy b1; nếu thiếu dữ liệu hoặc serial, tool hiện lý do ở hàng Máy 2. Nếu q2 Offline, tool nhắc Start rồi bấm Tiếp tục. Đây là kết luận từ mã và test mô phỏng, **chưa xác minh là nguyên nhân duy nhất của lần dừng thật**.

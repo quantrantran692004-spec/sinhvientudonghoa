@@ -899,7 +899,8 @@ class Window:
             if session is not None:
                 may_continue = session.state == "PAUSED"
             elif self.draft.locked:
-                may_continue = i in self.jobs and not self.running
+                may_continue = (i in self.jobs and not self.running
+                                and state != "menu_only")
             else:
                 may_continue = not self.running and not issue
             self.row_buttons[i].configure(
@@ -1203,10 +1204,20 @@ class Window:
         if factory is None:
             return
         if self.cancel.is_set() and index not in self.post_menu_sessions:
+            self.events.put((index, f"q{index + 1} đã tới menu; mẻ đang dừng",
+                             "stopped", f"q{index + 1}"))
             return
         job = self.jobs.get(index)
         serial = self.phone_serials.get(index)
-        if job is None or job.account is None or serial is None:
+        if job is None or job.account is None:
+            self.events.put((index,
+                             f"q{index + 1} đã tới menu nhưng chưa có hàng Amazon trong mẻ",
+                             "menu_only", f"q{index + 1}"))
+            return
+        if serial is None:
+            self.events.put((index,
+                             f"q{index + 1} đã tới menu nhưng chưa nối ADB; bấm Tiếp tục để nối lại",
+                             "post_paused", f"q{index + 1}"))
             return
         steps = self.post_menu_steps.get(index)
         if steps is None:

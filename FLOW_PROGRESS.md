@@ -11,7 +11,7 @@ Từ **b4 Sign In** ở menu ba gạch: nhập số của đúng hàng, chọn `
 | Máy | Ảnh/mốc đã hướng dẫn | Đã nối trong mã | Đã thử trên máy thật | Phần còn thiếu |
 | --- | --- | --- | --- | --- |
 | q1 | Chín ảnh ban đầu đánh dấu b1–b11; thêm năm ảnh ngày 13/11: form SĐT, lỗi b6/b9/b10. Ảnh chọn quốc gia ban đầu có tiêu đề q6 nên chỉ là ví dụ UI. | Có: `build_q1_steps` + luồng chung đã sửa b4/b6/b9/b10 và Tiếp tục. | Người dùng đã thử q1 và gửi lỗi ở b6, b9, b10; sửa mới chưa được thử lại thật. | Xác minh sửa trên q1, URL OTP sau gửi và màn sau Create. |
-| q2 | Hai ảnh: b1 bấm tab nhà và xem 2–5 giây; b2 bấm menu ba gạch; b3 bấm Pets. | Có: `build_q2_steps` + luồng chung. | Chưa thử b1–b11 thật. | Xác minh tab/locator/UI thực tế và màn sau Create. |
+| q2 | Hai ảnh: b1 bấm tab nhà và xem 2–5 giây; b2 bấm menu ba gạch; b3 bấm Pets. | Có: `build_q2_steps` + luồng chung; đã sửa nhánh nối lại ADB từ menu lưu trước. | Người dùng thấy q2 tới menu rồi đứng, tool chỉ ghi đã tới menu. Sửa mới chưa thử lại thật. | Xác minh q2 tự bấm Home sau menu, locator/UI thực tế và màn sau Create. |
 | q3–q12 | Chưa nhận ảnh b1–b3 riêng của từng máy. | Chưa bật sau menu; vẫn dừng tại menu ba gạch. | Chưa. | Người dùng hướng dẫn b1–b3 từng máy. |
 
 ## Cách xử lý ảnh tiếp theo

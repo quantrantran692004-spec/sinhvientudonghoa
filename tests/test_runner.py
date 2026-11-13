@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 from amazon_android.core import ToolError
 from amazon_android.profile_registry import ProfileRegistry
-from amazon_android.runner import RunJob, run_batch
+from amazon_android.runner import AccountData, RunJob, run_batch
 from amazon_android.swarmote_desktop import (ProfileCreateNotSubmitted,
     ProfileManagerWindowError, ProfileNotFound, ProxyConfig)
 
@@ -99,6 +99,36 @@ class RunnerTests(unittest.TestCase):
             (0, "q1", "ACNq1", "127.0.0.1:5001"),
             (1, "q2", "ACNq2", "127.0.0.1:5002"),
         ])
+
+    def test_existing_q2_menu_reconnects_its_serial_before_done(self):
+        item = self.registry.reserve("batch", 1, self.status)
+        self.existing.add("q2")
+        self.running.add("q2")
+        self.registry.mark("batch", 1, "DONE", device_id="ACNq2",
+                           stage="MENU_OPEN")
+        account_job = RunJob(1, "batch", self.jobs[1].proxy,
+                             account=AccountData(
+                                 "12025550124", "Second User", "Example456!",
+                                 "https://apifc.net/smsrecord?token=q2"))
+        ready = []
+        result, events = self.execute([account_job], auto_close=False,
+                                      menu_ready=lambda *args: ready.append(args))
+        self.assertEqual(result["menu_open"], 1)
+        self.assertEqual(ready, [(1, "q2", "ACNq2", "127.0.0.1:5002")])
+        self.assertEqual(events[-1][2], "done")
+        self.assertNotIn("install:q2", self.calls)
+
+    def test_existing_q2_menu_offline_does_not_claim_automation_started(self):
+        self.registry.reserve("batch", 1, self.status)
+        self.existing.add("q2")
+        self.registry.mark("batch", 1, "DONE", device_id="ACNq2",
+                           stage="MENU_OPEN")
+        ready = []
+        result, events = self.execute([self.jobs[1]],
+                                      menu_ready=lambda *args: ready.append(args))
+        self.assertEqual(result["stopped"], 1)
+        self.assertEqual(ready, [])
+        self.assertEqual(events[-1][2], "stopped")
 
     def test_hidden_creation_setting_only_changes_create_call(self):
         result, _ = self.execute(self.jobs[:1], hide_profile_creation=True)

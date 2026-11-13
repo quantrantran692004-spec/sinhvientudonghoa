@@ -18,4 +18,4 @@
 1. Cập nhật `STEP_INVENTORY.md`, `FLOW_PROGRESS.md` và tài liệu máy liên quan nếu yêu cầu đổi.
 2. Chạy `python -m graphify update .` rồi `python -m graphify tree` tại `D:\sinhvien`.
 3. Đối chiếu file/symbol/tiêu đề mới với `graphify-out/graph.json`, rồi đọc file gốc khi cần chi tiết. `graphify.exe` hiện lỗi uv trampoline; dùng `python -m graphify`.
-4. Chạy test bằng thư mục tạm trong workspace nếu sandbox chặn Temp mặc định. Ngày 13/11/2026, `118/118` unittest đã qua với `TMP`, `TEMP`, `TMPDIR` trỏ vào `D:\sinhvien\.test_tmp` sau sửa b4–b11 dùng chung.
+4. Chạy test bằng thư mục tạm trong workspace nếu sandbox chặn Temp mặc định. Ngày 13/11/2026, `122/122` unittest đã qua với `TMP`, `TEMP`, `TMPDIR` trỏ vào `D:\sinhvien\.test_tmp` sau sửa nhánh q2 đã tới menu.
